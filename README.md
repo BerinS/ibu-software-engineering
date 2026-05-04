@@ -1,6 +1,6 @@
-# IBU Software Engineering Course - Backend
+# IBU Software Engineering Course 
 
-## Setup Instructions
+## Backend Setup Instructions
 ```
 1 - Install NodeJS LTS
 2 - Install PostgreSQL and setup database from init.sql (located in /backend/db)
@@ -18,3 +18,11 @@ DB_PASSWORD=your_password
 DB_PORT=5432
 ```
 
+## Frontend Setup Instructions
+```
+1 - Navigate to the frontend folder and run: npm install
+2 - In the command line run: npm run dev, and you're done
+*don't forget to have the backend running
+```
+## UI Screenshots
+![All Events page](frontend/src/images/UI%20Screenshots/AllEvents.jpg)
