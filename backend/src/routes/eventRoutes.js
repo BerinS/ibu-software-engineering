@@ -14,6 +14,7 @@ const validateEvent = [
     }
     return true;
   }),
+  body('category').optional().trim().isLength({ max: 50 }).withMessage('Category must be 50 chars or fewer'),
 ];
 
 router.route('/')
