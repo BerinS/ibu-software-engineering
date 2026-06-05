@@ -1,11 +1,12 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { getEvents, getEventById, createEvent } from '../controllers/eventController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 const validateEvent = [
-  body('organizer_id').isInt().withMessage('Organizer ID must be an integer'),
+  // organizer_id - from req.user.id in the controller.
   body('title').trim().isLength({ min: 5, max: 255 }).withMessage('Title must be 5-255 chars'),
   body('total_capacity').isInt({ min: 1 }).withMessage('Capacity must be at least 1'),
   body('event_date').isISO8601().toDate().custom((value) => {
@@ -19,7 +20,7 @@ const validateEvent = [
 
 router.route('/')
   .get(getEvents)
-  .post(validateEvent, createEvent);
+  .post(protect, validateEvent, createEvent); // protect: must be logged in to create
 
 router.route('/:id')
   .get(getEventById);

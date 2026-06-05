@@ -31,17 +31,18 @@ export const getEventById = async (req, res, next) => {
   }
 };
 
-// POST /api/events
+// POST /api/events  (protected — req.user is set by authMiddleware)
 export const createEvent = async (req, res, next) => {
-  // validation error check from route middleware
   const errors = validationResult(req);
-
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
-    const newEvent = await Event.create(req.body);
+    // organizer_id always comes from the verified token, never from the body.
+    // Accepting it from the body would allow any user to spoof another user's ID.
+    const eventData = { ...req.body, organizer_id: req.user.id };
+    const newEvent = await Event.create(eventData);
     res.status(201).json(newEvent);
   } catch (error) {
     next(error);

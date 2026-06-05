@@ -1,7 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import AllEvents from './pages/AllEvents';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 const theme = createTheme({
   palette: {
@@ -32,28 +36,17 @@ const theme = createTheme({
       styleOverrides: `
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-        *, *::before, *::after {
-          box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
 
         body {
           background-color: #080C10;
           min-height: 100vh;
         }
 
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #080C10;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #1E2A35;
-          border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: #00D4FF33;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080C10; }
+        ::-webkit-scrollbar-thumb { background: #1E2A35; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00D4FF33; }
       `,
     },
     MuiButton: {
@@ -67,6 +60,44 @@ const theme = createTheme({
         },
       },
     },
+    // TextField / Input overrides — match the dark palette
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          fontFamily: '"DM Sans", sans-serif',
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'rgba(240,244,248,0.15)',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'rgba(240,244,248,0.35)',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#00D4FF',
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#f87171',
+          },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          fontFamily: '"DM Sans", sans-serif',
+          color: '#7A8A99',
+          '&.Mui-focused': { color: '#00D4FF' },
+          '&.Mui-error':   { color: '#f87171' },
+        },
+      },
+    },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          fontFamily: '"DM Sans", sans-serif',
+          '&.Mui-error': { color: '#f87171' },
+        },
+      },
+    },
   },
   shape: {
     borderRadius: 12,
@@ -77,12 +108,18 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<AllEvents />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </Router>
+      {/* AuthProvider outside Router */}
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/"          element={<AllEvents />} />
+            <Route path="/login"     element={<LoginPage />} />
+            <Route path="/register"  element={<RegisterPage />} />
+            {/* Protected routes here */}
+            <Route path="*"          element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

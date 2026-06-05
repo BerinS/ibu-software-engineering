@@ -16,7 +16,9 @@ DB_HOST=localhost
 DB_NAME=scanova
 DB_PASSWORD=your_password
 DB_PORT=5432
+JWT_SECRET=scanova_super_secret_key_change_in_production
 ```
+*Leave the jwt like the example above while testing.
 
 ## Frontend Setup Instructions
 ```
