@@ -7,10 +7,11 @@ import generateToken from '../utils/generateToken.js';
 // ── helpers ────────────────────────────────────────────────────────────────
 
 const safeUser = (user, token) => ({
-  id:        user.id,
-  full_name: user.full_name,
-  email:     user.email,
-  role:      user.role,
+  id:         user.id,
+  full_name:  user.full_name,
+  email:      user.email,
+  role:       user.role,
+  created_at: user.created_at ?? null,
   token,
 });
 

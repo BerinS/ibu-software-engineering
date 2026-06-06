@@ -104,6 +104,8 @@ const Navbar = () => {
               /* ── Logged-in ── */
               <>
                 <Box
+                  component={Link}
+                  to="/profile"
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -111,6 +113,12 @@ const Navbar = () => {
                     ml: 1,
                     pl: 1.5,
                     borderLeft: '1px solid rgba(240,244,248,0.08)',
+                    textDecoration: 'none',
+                    borderRadius: '8px',
+                    px: 1,
+                    py: 0.5,
+                    transition: 'background 0.2s',
+                    '&:hover': { background: 'rgba(240,244,248,0.05)' },
                   }}
                 >
                   <Avatar

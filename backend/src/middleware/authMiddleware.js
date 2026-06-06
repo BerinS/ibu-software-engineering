@@ -19,7 +19,7 @@ export const protect = async (req, res, next) => {
     const { id } = jwt.verify(token, process.env.JWT_SECRET);
 
     const result = await query(
-      'SELECT id, full_name, email, role FROM users WHERE id = $1',
+      'SELECT id, full_name, email, role, created_at FROM users WHERE id = $1',
       [id]
     );
 
