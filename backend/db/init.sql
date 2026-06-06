@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 9BrwolI878Dez7v1EDqrq8KN28Mc5xUXEKpZyLySIybEGjb1Bhjo5IdxOfAbF8i
+\restrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
 
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
 
--- Started on 2026-06-05 19:37:01
+-- Started on 2026-06-06 15:55:53
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -30,9 +30,9 @@ DROP DATABASE IF EXISTS scanova;
 CREATE DATABASE scanova WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'Bosnian (Latin)_Bosnia & Herzegovina.1252';
 
 
-\unrestrict 9BrwolI878Dez7v1EDqrq8KN28Mc5xUXEKpZyLySIybEGjb1Bhjo5IdxOfAbF8i
+\unrestrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
 \connect scanova
-\restrict 9BrwolI878Dez7v1EDqrq8KN28Mc5xUXEKpZyLySIybEGjb1Bhjo5IdxOfAbF8i
+\restrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -337,16 +337,13 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (1, 2, 'Tech Innovation Summit', 'A deep dive into 2024 tech trends.', 'Main Hall A', '2024-11-15 10:00:00+01', 100, '[{"time": "09:00", "title": "Opening", "speaker": "Amina B."}, {"time": "11:00", "title": "AI Future", "speaker": "Dr. Smith"}]', '2026-04-26 15:16:32.774744+02', 'Technology', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (2, 2, 'Postgres Workshop', 'Hands-on database design session.', 'Lab 302', '2024-12-01 15:00:00+01', 30, '[{"time": "14:00", "title": "Setup", "speaker": "Berin S."}, {"time": "15:30", "title": "Optimization", "speaker": "Expert Joe"}]', '2026-04-26 15:16:32.774744+02', 'Workshop', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (3, 2, 'Student Networking Gala', 'Mix and mingle with industry leaders.', 'Grand Ballroom', '2024-12-20 19:00:00+01', 200, '[{"time": "18:00", "title": "Welcome Drinks", "speaker": "Admin"}]', '2026-04-26 15:16:32.774744+02', 'Networking', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (4, 2, 'AI & Machine Learning Conference', 'Explore cutting-edge AI trends with industry leaders and researchers.', 'Innovation Center', '2026-07-12 09:00:00+02', 300, '[{"time": "09:00", "title": "Keynote: AI Today", "speaker": "Dr. Elena Kovač"}, {"time": "11:00", "title": "ML in Production", "speaker": "Tom Bright"}]', '2026-06-04 11:28:28.463625+02', 'Technology', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (5, 2, 'Digital Marketing Bootcamp', 'Hands-on workshop covering SEO, social media strategy, and paid ads.', 'Room 101, Business Center', '2026-08-05 10:00:00+02', 40, '[{"time": "10:00", "title": "SEO Fundamentals", "speaker": "Sara Lund"}, {"time": "13:00", "title": "Paid Ads Deep Dive", "speaker": "Mark Wells"}]', '2026-06-04 11:28:28.463625+02', 'Workshop', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (6, 2, 'Jazz Night at the Grand', 'An evening of live jazz featuring local and international artists.', 'Grand Hotel Sarajevo', '2026-09-20 20:00:00+02', 180, '[{"time": "20:00", "title": "Opening Set", "speaker": "The Blue Note Trio"}, {"time": "22:00", "title": "Headliner", "speaker": "Sofia Ensemble"}]', '2026-06-04 11:28:28.463625+02', 'Music', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (7, 2, 'Startup Pitch Competition', 'Entrepreneurs pitch to a panel of investors for seed funding opportunities.', 'Startup Hub, Floor 3', '2026-10-03 14:00:00+02', 120, '[{"time": "14:00", "title": "Intro & Rules", "speaker": "Host"}, {"time": "15:00", "title": "Pitch Round 1", "speaker": "Various"}]', '2026-06-04 11:28:28.463625+02', 'Business', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (8, 2, 'Photography Masterclass', 'Learn composition, lighting, and post-processing from a professional photographer.', 'Art Studio 7', '2026-11-15 10:00:00+01', 25, '[{"time": "10:00", "title": "Composition Basics", "speaker": "Ines Halilović"}, {"time": "12:30", "title": "Lightroom Workflow", "speaker": "Ines Halilović"}]', '2026-06-04 11:28:28.463625+02', 'Arts', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (9, 2, 'Annual Sports & Wellness Expo', 'Discover the latest in sports tech, nutrition, and fitness with live demos.', 'City Sports Arena', '2026-12-06 08:00:00+01', 500, '[{"time": "08:00", "title": "Expo Opens", "speaker": "Admin"}, {"time": "10:00", "title": "Future of Fitness", "speaker": "Coach Rivera"}]', '2026-06-04 11:28:28.463625+02', 'Sports', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (10, 2, 'UX Design Intensive', 'Two-day intensive on user research, wireframing, and prototyping in Figma.', 'Design Lab, Tech Park', '2027-01-22 09:00:00+01', 35, '[{"time": "09:00", "title": "User Research Methods", "speaker": "Mia Chen"}, {"time": "14:00", "title": "Prototyping with Figma", "speaker": "Mia Chen"}]', '2026-06-04 11:28:28.463625+02', 'Workshop', 'pending');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (5, 7, 'React & Modern Frontend Summit', 'A full-day deep dive into React 19, server components, and the modern frontend ecosystem.', 'Tech Hub Sarajevo, Floor 4', '2026-09-15 09:00:00+02', 150, '[]', '2026-06-06 15:11:49.401022+02', 'Technology', 'pending');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (7, 7, 'Electronic Music Festival — Night 1', 'Three stages, twelve artists, one unforgettable night of electronic music.', 'Zetra Olympic Hall', '2026-10-10 21:00:00+02', 2000, '[]', '2026-06-06 15:11:49.401022+02', 'Music', 'pending');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (12, 7, 'Open Source Contributor Day', 'Collaborative coding sessions — bring your laptop and contribute to real open-source projects.', 'IBU Innovation Lab', '2026-07-20 10:00:00+02', 60, '[]', '2026-06-06 15:14:15.595335+02', 'Technology', 'approved');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (13, 7, 'Yoga & Mindfulness Retreat', 'A weekend of guided yoga, breathwork, and mindfulness sessions in a mountain setting.', 'Bjelašnica Mountain Resort', '2026-08-08 08:00:00+02', 30, '[]', '2026-06-06 15:14:15.595335+02', 'Sports', 'approved');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (16, 7, 'Open Source Contributor Day', 'Collaborative coding sessions — bring your laptop and contribute to real open-source projects.', 'IBU Innovation Lab', '2026-07-20 10:00:00+02', 60, '[]', '2026-06-06 15:14:38.193143+02', 'Technology', 'approved');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (18, 7, 'Pyramid Scheme Coaching Workshop', 'Learn exclusive wealth-building strategies.', 'Undisclosed Location', '2026-07-01 14:00:00+02', 500, '[]', '2026-06-06 15:14:46.020327+02', 'Business', 'rejected');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (6, 7, 'Balkan Entrepreneur Meetup', 'Monthly gathering of founders, investors, and operators building companies in the Western Balkans.', 'Startup Garage, Skenderija', '2026-08-22 18:00:00+02', 80, '[]', '2026-06-06 15:11:49.401022+02', 'Business', 'pending');
 
 
 --
@@ -363,21 +360,11 @@ INSERT INTO public.events (id, organizer_id, title, description, location, event
 -- Data for Name: ticket_types; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (1, 1, 'Standard Access', 0.00, 80, 2);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (2, 1, 'VIP Backstage', 50.00, 20, 0);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (3, 2, 'Workshop Pass', 10.00, 30, 1);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (4, 3, 'Early Bird', 5.00, 50, 0);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (5, 4, 'General Admission', 25.00, 200, 180);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (6, 4, 'VIP Access', 75.00, 100, 95);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (7, 5, 'Workshop Seat', 30.00, 40, 12);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (8, 6, 'Standard Ticket', 15.00, 130, 45);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (9, 6, 'VIP Table', 60.00, 50, 10);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (10, 7, 'Attendee Pass', 0.00, 100, 68);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (11, 7, 'Investor Pass', 150.00, 20, 17);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (12, 8, 'Masterclass Seat', 80.00, 25, 22);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (13, 9, 'Day Pass', 10.00, 400, 89);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (14, 9, 'VIP Experience', 45.00, 100, 12);
-INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (15, 10, 'Bootcamp Seat', 120.00, 35, 5);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (6, 12, 'General Admission', 0.00, 50, 23);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (8, 13, 'Retreat Pass', 120.00, 30, 18);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (10, 12, 'General Admission', 0.00, 50, 23);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (11, 16, 'General Admission', 0.00, 50, 23);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (13, 13, 'Retreat Pass', 120.00, 30, 18);
 
 
 --
@@ -386,10 +373,8 @@ INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tick
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.users (id, full_name, email, password_hash, role, created_at) VALUES (1, 'System Admin', 'admin@scanova.com', 'hashed_pass_123', 'admin', '2026-04-26 15:16:23.432641+02');
-INSERT INTO public.users (id, full_name, email, password_hash, role, created_at) VALUES (2, 'Amina Brković', 'amina@organizer.com', 'hashed_pass_456', 'organizer', '2026-04-26 15:16:23.432641+02');
-INSERT INTO public.users (id, full_name, email, password_hash, role, created_at) VALUES (5, 'John Smith', 'john.smith@scanova.com', '$2b$10$PFamvieF7RheeFy3zwWNeeJXuUtAPglMQI.Dg/g/f2gNyeM8hk3vm', 'admin', '2026-06-05 18:18:35.475693+02');
-INSERT INTO public.users (id, full_name, email, password_hash, role, created_at) VALUES (7, 'Berin Surkovic', 'berin.surkovic@gmail.com', '$2b$10$OZyIqaArk.Aql.AUVyxZUuLbaGAhPP.zj4wXCW9gw.1yV019cZhoq', 'attendee', '2026-06-05 18:59:55.365383+02');
+INSERT INTO public.users (id, full_name, email, password_hash, role, created_at) VALUES (8, 'Admin', 'admin@scanova.com', '$2b$10$IpS88z30v.soq1aITTJ0K.W8vD6PIIVHOFHTS4B3SDEt4SLehRcXK', 'admin', '2026-06-06 14:27:27.096972+02');
+INSERT INTO public.users (id, full_name, email, password_hash, role, created_at) VALUES (7, 'John Smith', 'john.smith@gmail.com', '$2b$10$bbQn7V9wfPwHKQ.3KNruRuv0h0gk8hrLuCjo8TY6yuOes8UX4Ud1y', 'organizer', '2026-06-06 15:06:58.535694+02');
 
 
 --
@@ -407,7 +392,7 @@ SELECT pg_catalog.setval('public.bookings_id_seq', 3, true);
 -- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.events_id_seq', 4, true);
+SELECT pg_catalog.setval('public.events_id_seq', 18, true);
 
 
 --
@@ -425,7 +410,7 @@ SELECT pg_catalog.setval('public.feedback_id_seq', 3, true);
 -- Name: ticket_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.ticket_types_id_seq', 4, true);
+SELECT pg_catalog.setval('public.ticket_types_id_seq', 14, true);
 
 
 --
@@ -434,7 +419,7 @@ SELECT pg_catalog.setval('public.ticket_types_id_seq', 4, true);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 7, true);
+SELECT pg_catalog.setval('public.users_id_seq', 9, true);
 
 
 --
@@ -571,11 +556,11 @@ ALTER TABLE ONLY public.ticket_types
     ADD CONSTRAINT ticket_types_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
 
 
--- Completed on 2026-06-05 19:37:01
+-- Completed on 2026-06-06 15:55:54
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 9BrwolI878Dez7v1EDqrq8KN28Mc5xUXEKpZyLySIybEGjb1Bhjo5IdxOfAbF8i
+\unrestrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
 

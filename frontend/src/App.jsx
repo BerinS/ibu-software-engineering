@@ -6,7 +6,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AllEvents from './pages/AllEvents';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
+import ProfilePage    from './pages/ProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
 
 const theme = createTheme({
   palette: {
@@ -118,6 +119,7 @@ function App() {
             <Route path="/register"  element={<RegisterPage />} />
             {/* Protected routes */}
             <Route path="/profile"   element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/admin"     element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

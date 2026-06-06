@@ -41,15 +41,16 @@ const RegisterPage = () => {
   const navigate        = useNavigate();
   const { user, login } = useAuth();
 
-  // if logged in 
-  if (user) return <Navigate to="/" replace />;
-
+  // All hooks must be declared before any conditional return (Rules of Hooks).
   const [form, setForm] = useState({
     full_name: '', email: '', password: '', confirmPassword: '',
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading,     setLoading]     = useState(false);
+
+  // Already logged in — safe to return early now that all hooks have been called.
+  if (user) return <Navigate to="/" replace />;
 
   const handleChange = (e) => {
     const { name, value } = e.target;

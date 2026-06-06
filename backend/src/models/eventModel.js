@@ -21,8 +21,10 @@ export const findAll = async (sortBy = 'event_date', sortOrder = 'DESC') => {
   const column = validColumns.includes(sortBy) ? sortBy : 'event_date';
   const order = validOrders.includes(sortOrder?.toUpperCase?.()) ? sortOrder.toUpperCase() : 'DESC';
 
+  // Public feed: only surface approved events.
+  // Admin access to all-status events goes through GET /api/admin/events.
   const result = await query(
-    `${ENRICHED_SELECT} GROUP BY e.id ORDER BY e.${column} ${order}`
+    `${ENRICHED_SELECT} WHERE e.status = 'approved' GROUP BY e.id ORDER BY e.${column} ${order}`
   );
   return result.rows;
 };

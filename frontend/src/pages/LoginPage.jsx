@@ -23,20 +23,21 @@ const validate = ({ email, password }) => {
 // ── Page ───────────────────────────────────────────────────────────────────
 
 const LoginPage = () => {
-  const navigate       = useNavigate();
-  const location       = useLocation();
+  const navigate        = useNavigate();
+  const location        = useLocation();
   const { user, login } = useAuth();
 
-  // Already logged in — nothing to do here
-  if (user) return <Navigate to="/" replace />;
-
+  // All hooks must be declared before any conditional return (Rules of Hooks).
   const [form,        setForm]        = useState({ email: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading,     setLoading]     = useState(false);
 
-  // Redirect to the page the user was trying to reach, or home
+  // Redirect to the page the user was trying to reach, or home.
   const redirectTo = location.state?.from?.pathname || '/';
+
+  // Already logged in — safe to return early now that all hooks have been called.
+  if (user) return <Navigate to="/" replace />;
 
   const handleChange = (e) => {
     const { name, value } = e.target;

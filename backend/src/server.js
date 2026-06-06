@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use('/api/users',  userRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/admin',  adminRoutes);
 
 // catches errors passed via next(error) in all routes
 app.use(errorHandler);

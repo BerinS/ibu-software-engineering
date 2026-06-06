@@ -7,8 +7,7 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// Derive up-to-two initials from a full name string.
-// filter(Boolean) removes empty segments caused by double spaces.
+// up-to-two initials from a full name string
 const getInitials = (name = '') =>
   name.split(' ').filter(Boolean).slice(0, 2).map((n) => n[0]).join('').toUpperCase();
 
@@ -99,6 +98,25 @@ const Navbar = () => {
             >
               Events
             </Button>
+
+            {/* Dashboard link — only visible to admins */}
+            {user?.role === 'admin' && (
+              <Button
+                component={Link}
+                to="/admin"
+                sx={{
+                  color: '#F59E0B',
+                  fontSize: '0.875rem',
+                  px: 2,
+                  border: '1px solid rgba(245,158,11,0.2)',
+                  borderRadius: '8px',
+                  '&:hover': { color: '#F59E0B', background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.4)' },
+                  transition: 'all 0.2s',
+                }}
+              >
+                Dashboard
+              </Button>
+            )}
 
             {user ? (
               /* ── Logged-in ── */

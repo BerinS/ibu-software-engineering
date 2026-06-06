@@ -3,7 +3,7 @@
 ## Backend Setup Instructions
 ```
 1 - Install NodeJS LTS
-2 - Install PostgreSQL and setup database from init.sql (located in /backend/db)
+2 - Install PostgreSQL and setup database from init.sql (located in /backend/db), db name is 'scanova'
 3 - Once Node.js is installed, navigate to the cloned repo folder and run: npm install
 4 - Make a .env file in /backend with DB credentials.
 5 - Run the backend API in dev mode with: npm run dev

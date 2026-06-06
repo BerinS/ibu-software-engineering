@@ -10,6 +10,7 @@ import AddCircleOutlineIcon   from '@mui/icons-material/AddCircleOutlined';
 import EventIcon              from '@mui/icons-material/Event';
 import BookmarkIcon           from '@mui/icons-material/Bookmark';
 import ArrowForwardIcon       from '@mui/icons-material/ArrowForward';
+import DashboardIcon          from '@mui/icons-material/Dashboard';
 import { Link } from 'react-router-dom';
 import Navbar    from '../components/Navbar';
 import EventCard from '../components/EventCard';
@@ -220,6 +221,21 @@ const ProfilePage = () => {
                   </Typography>
                 )}
               </Box>
+
+              {/* Admin shortcut — Dashboard button */}
+              {role === 'admin' && (
+                <Button
+                  component={Link}
+                  to="/admin"
+                  variant="outlined"
+                  startIcon={<DashboardIcon />}
+                  sx={{ mt: 2, color: '#F59E0B', borderColor: 'rgba(245,158,11,0.35)', fontWeight: 600,
+                    fontSize: '0.85rem',
+                    '&:hover': { borderColor: '#F59E0B', background: 'rgba(245,158,11,0.06)' } }}
+                >
+                  Go to Dashboard
+                </Button>
+              )}
             </Box>
           </Box>
         </Box>
