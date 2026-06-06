@@ -1,5 +1,6 @@
 import * as Event from '../models/eventModel.js';
 import { validationResult } from 'express-validator';
+import ApiError from '../utils/ApiError.js';
 
 // GET GET /api/events?sortBy=title&order=asc
 export const getEvents = async (req, res, next) => {
@@ -21,8 +22,7 @@ export const getEventById = async (req, res, next) => {
     const event = await Event.findById(req.params.id);
     
     if (!event) {
-      res.status(404);
-      throw new Error('Event not found');
+      throw ApiError.notFound('Event');
     }
 
     res.status(200).json(event);

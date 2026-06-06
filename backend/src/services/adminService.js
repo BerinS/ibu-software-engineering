@@ -1,39 +1,8 @@
 import { pool, query } from '../config/db.js';
+import ApiError from '../utils/ApiError.js';
 
-/**
- * AdminService — Service Layer for all admin operations.
- *
- * Pattern: Service Layer
- *   Controllers are thin HTTP adapters (parse request → call service → send response).
- *   Business logic lives here: validation rules, multi-step operations, transactions.
- *
- * Why a class?
- *   - Groups all admin business logic under one namespace.
- *   - Private helper factories (#notFound etc.) eliminate repeated error-shape code.
- *   - If the pool ever needs to be injected (e.g. for testing), the constructor
- *     provides a clean extension point.
- *   - Exported as a singleton so the pool is shared across all requests.
- */
+
 class AdminService {
-  // ── Private error factories ───────────────────────────────────────────────
-
-  #notFound(resource) {
-    const err = new Error(`${resource} not found`);
-    err.statusCode = 404;
-    return err;
-  }
-
-  #forbidden(msg) {
-    const err = new Error(msg);
-    err.statusCode = 403;
-    return err;
-  }
-
-  #badRequest(msg) {
-    const err = new Error(msg);
-    err.statusCode = 400;
-    return err;
-  }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
@@ -65,16 +34,15 @@ class AdminService {
 
   /**
    * Update a user's role.
-   * Guards: role must be a valid enum value; admin cannot change their own role
-   * (to prevent accidental self-lockout).
+   * Guards: role must be a valid enum value; admin cannot change their own role   
    */
   async updateUserRole(userId, newRole, requestingUserId) {
     const VALID_ROLES = ['attendee', 'organizer', 'admin'];
     if (!VALID_ROLES.includes(newRole)) {
-      throw this.#badRequest(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`);
+      throw ApiError.badRequest(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`);
     }
     if (Number(userId) === Number(requestingUserId)) {
-      throw this.#forbidden('You cannot change your own role');
+      throw ApiError.forbidden('You cannot change your own role');
     }
 
     const result = await query(
@@ -84,35 +52,30 @@ class AdminService {
        RETURNING id, full_name, email, role, created_at`,
       [newRole, userId]
     );
-    if (!result.rows[0]) throw this.#notFound('User');
+    if (!result.rows[0]) throw ApiError.notFound('User');
     return result.rows[0];
   }
 
   /**
    * Delete a user.
-   * ON DELETE CASCADE handles all their events, bookings, and feedback.
-   * Guard: admin cannot delete themselves.
+   * ON DELETE CASCADE handles all their events, bookings, and feedback
    */
   async deleteUser(userId, requestingUserId) {
     if (Number(userId) === Number(requestingUserId)) {
-      throw this.#forbidden('You cannot delete your own account');
+      throw ApiError.forbidden('You cannot delete your own account');
     }
 
     const result = await query(
       'DELETE FROM users WHERE id = $1 RETURNING id',
       [userId]
     );
-    if (!result.rows[0]) throw this.#notFound('User');
+    if (!result.rows[0]) throw ApiError.notFound('User');
     return { deleted: true, id: Number(userId) };
   }
 
   // ── Events ────────────────────────────────────────────────────────────────
 
-  /**
-   * Returns ALL events across all statuses, enriched with ticket aggregations
-   * and organizer info. Ordered: pending first (the review queue), then by
-   * created_at DESC within each status group.
-   */
+ 
   async getAllEvents() {
     const result = await query(`
       SELECT
@@ -137,13 +100,7 @@ class AdminService {
     return result.rows;
   }
 
-  /**
-   * Approve a pending event and, atomically within the same transaction,
-   * promote the organizer from 'attendee' → 'organizer' if they haven't
-   * been promoted already. Both succeed or both roll back.
-   *
-   * Returns: { event, organizerPromoted: bool, promotedUser: { id, full_name } | null }
-   */
+  
   async approveEvent(eventId) {
     const client = await pool.connect();
     try {
@@ -161,8 +118,8 @@ class AdminService {
       if (!eventResult.rows[0]) {
         // Not found OR not in pending state — distinguish for a clear message
         const check = await client.query('SELECT status FROM events WHERE id = $1', [eventId]);
-        if (!check.rows[0]) throw this.#notFound('Event');
-        throw this.#badRequest(`Event cannot be approved — current status is '${check.rows[0].status}'`);
+        if (!check.rows[0]) throw ApiError.notFound('Event');
+        throw ApiError.badRequest(`Event cannot be approved — current status is '${check.rows[0].status}'`);
       }
 
       const event = eventResult.rows[0];
@@ -206,8 +163,8 @@ class AdminService {
     );
     if (!result.rows[0]) {
       const check = await query('SELECT status FROM events WHERE id = $1', [eventId]);
-      if (!check.rows[0]) throw this.#notFound('Event');
-      throw this.#badRequest(`Event cannot be rejected — current status is '${check.rows[0].status}'`);
+      if (!check.rows[0]) throw ApiError.notFound('Event');
+      throw ApiError.badRequest(`Event cannot be rejected — current status is '${check.rows[0].status}'`);
     }
     return result.rows[0];
   }
@@ -221,7 +178,7 @@ class AdminService {
       'DELETE FROM events WHERE id = $1 RETURNING id',
       [eventId]
     );
-    if (!result.rows[0]) throw this.#notFound('Event');
+    if (!result.rows[0]) throw ApiError.notFound('Event');
     return { deleted: true, id: Number(eventId) };
   }
 
@@ -257,7 +214,7 @@ class AdminService {
       'DELETE FROM bookings WHERE id = $1 RETURNING id',
       [bookingId]
     );
-    if (!result.rows[0]) throw this.#notFound('Booking');
+    if (!result.rows[0]) throw ApiError.notFound('Booking');
     return { deleted: true, id: Number(bookingId) };
   }
 
@@ -287,7 +244,7 @@ class AdminService {
       'DELETE FROM feedback WHERE id = $1 RETURNING id',
       [feedbackId]
     );
-    if (!result.rows[0]) throw this.#notFound('Feedback');
+    if (!result.rows[0]) throw ApiError.notFound('Feedback');
     return { deleted: true, id: Number(feedbackId) };
   }
 }

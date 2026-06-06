@@ -3,6 +3,7 @@ import { query } from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import { validationResult } from 'express-validator';
 import generateToken from '../utils/generateToken.js';
+import ApiError from '../utils/ApiError.js';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -27,8 +28,7 @@ export const registerUser = async (req, res, next) => {
 
     const existing = await User.findByEmail(email);
     if (existing) {
-      res.status(400);
-      throw new Error('An account with this email already exists');
+      throw ApiError.badRequest('An account with this email already exists');
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -57,8 +57,7 @@ export const loginUser = async (req, res, next) => {
       return res.json(safeUser(user, generateToken(user.id)));
     }
 
-    res.status(401);
-    throw new Error('Invalid email or password');
+    throw ApiError.unauthorized('Invalid email or password');
   } catch (error) {
     next(error);
   }
@@ -144,8 +143,7 @@ export const getUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      res.status(404);
-      throw new Error('User not found');
+      throw ApiError.notFound('User');
     }
     res.json(user);
   } catch (error) {

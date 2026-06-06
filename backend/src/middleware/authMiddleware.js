@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db.js';
+import ApiError from '../utils/ApiError.js';
 
 /**
  * protect — verifies the Bearer JWT in the Authorization header.
@@ -10,8 +11,7 @@ export const protect = async (req, res, next) => {
   const auth = req.headers.authorization;
 
   if (!auth?.startsWith('Bearer ')) {
-    res.status(401);
-    return next(new Error('Not authorised — no token provided'));
+    return next(ApiError.unauthorized('Not authorised — no token provided'));
   }
 
   try {
@@ -24,15 +24,13 @@ export const protect = async (req, res, next) => {
     );
 
     if (!result.rows[0]) {
-      res.status(401);
-      return next(new Error('Not authorised — user no longer exists'));
+      return next(ApiError.unauthorized('Not authorised — user no longer exists'));
     }
 
     req.user = result.rows[0];
     next();
   } catch {
-    res.status(401);
-    next(new Error('Not authorised — invalid or expired token'));
+    next(ApiError.unauthorized('Not authorised — invalid or expired token'));
   }
 };
 
@@ -42,6 +40,5 @@ export const protect = async (req, res, next) => {
  */
 export const requireRole = (...roles) => (req, res, next) => {
   if (req.user && roles.includes(req.user.role)) return next();
-  res.status(403);
-  next(new Error(`Access denied — requires role: ${roles.join(' or ')}`));
+  next(ApiError.forbidden(`Access denied — requires role: ${roles.join(' or ')}`));
 };
