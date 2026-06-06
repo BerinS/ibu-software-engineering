@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
+\restrict 3OPJ3HHxxOmayktAaB73gj6xStjc3HMs3Va3cGQQQUrc7sfEOLs3acheVGWYAh5
 
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
 
--- Started on 2026-06-06 15:55:53
+-- Started on 2026-06-07 00:27:35
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -30,9 +30,9 @@ DROP DATABASE IF EXISTS scanova;
 CREATE DATABASE scanova WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'Bosnian (Latin)_Bosnia & Herzegovina.1252';
 
 
-\unrestrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
+\unrestrict 3OPJ3HHxxOmayktAaB73gj6xStjc3HMs3Va3cGQQQUrc7sfEOLs3acheVGWYAh5
 \connect scanova
-\restrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
+\restrict 3OPJ3HHxxOmayktAaB73gj6xStjc3HMs3Va3cGQQQUrc7sfEOLs3acheVGWYAh5
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -141,7 +141,8 @@ CREATE TABLE public.events (
     agenda_data jsonb DEFAULT '[]'::jsonb,
     created_at timestamp with time zone DEFAULT now(),
     category character varying(50) DEFAULT 'General'::character varying NOT NULL,
-    status public.event_status DEFAULT 'pending'::public.event_status
+    status public.event_status DEFAULT 'pending'::public.event_status,
+    cover_image character varying(255)
 );
 
 
@@ -337,13 +338,14 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (5, 7, 'React & Modern Frontend Summit', 'A full-day deep dive into React 19, server components, and the modern frontend ecosystem.', 'Tech Hub Sarajevo, Floor 4', '2026-09-15 09:00:00+02', 150, '[]', '2026-06-06 15:11:49.401022+02', 'Technology', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (7, 7, 'Electronic Music Festival — Night 1', 'Three stages, twelve artists, one unforgettable night of electronic music.', 'Zetra Olympic Hall', '2026-10-10 21:00:00+02', 2000, '[]', '2026-06-06 15:11:49.401022+02', 'Music', 'pending');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (12, 7, 'Open Source Contributor Day', 'Collaborative coding sessions — bring your laptop and contribute to real open-source projects.', 'IBU Innovation Lab', '2026-07-20 10:00:00+02', 60, '[]', '2026-06-06 15:14:15.595335+02', 'Technology', 'approved');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (13, 7, 'Yoga & Mindfulness Retreat', 'A weekend of guided yoga, breathwork, and mindfulness sessions in a mountain setting.', 'Bjelašnica Mountain Resort', '2026-08-08 08:00:00+02', 30, '[]', '2026-06-06 15:14:15.595335+02', 'Sports', 'approved');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (16, 7, 'Open Source Contributor Day', 'Collaborative coding sessions — bring your laptop and contribute to real open-source projects.', 'IBU Innovation Lab', '2026-07-20 10:00:00+02', 60, '[]', '2026-06-06 15:14:38.193143+02', 'Technology', 'approved');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (18, 7, 'Pyramid Scheme Coaching Workshop', 'Learn exclusive wealth-building strategies.', 'Undisclosed Location', '2026-07-01 14:00:00+02', 500, '[]', '2026-06-06 15:14:46.020327+02', 'Business', 'rejected');
-INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status) VALUES (6, 7, 'Balkan Entrepreneur Meetup', 'Monthly gathering of founders, investors, and operators building companies in the Western Balkans.', 'Startup Garage, Skenderija', '2026-08-22 18:00:00+02', 80, '[]', '2026-06-06 15:11:49.401022+02', 'Business', 'pending');
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (5, 7, 'React & Modern Frontend Summit', 'A full-day deep dive into React 19, server components, and the modern frontend ecosystem.', 'Tech Hub Sarajevo, Floor 4', '2026-09-15 09:00:00+02', 150, '[]', '2026-06-06 15:11:49.401022+02', 'Technology', 'pending', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (7, 7, 'Electronic Music Festival — Night 1', 'Three stages, twelve artists, one unforgettable night of electronic music.', 'Zetra Olympic Hall', '2026-10-10 21:00:00+02', 2000, '[]', '2026-06-06 15:11:49.401022+02', 'Music', 'pending', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (12, 7, 'Open Source Contributor Day', 'Collaborative coding sessions — bring your laptop and contribute to real open-source projects.', 'IBU Innovation Lab', '2026-07-20 10:00:00+02', 60, '[]', '2026-06-06 15:14:15.595335+02', 'Technology', 'approved', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (13, 7, 'Yoga & Mindfulness Retreat', 'A weekend of guided yoga, breathwork, and mindfulness sessions in a mountain setting.', 'Bjelašnica Mountain Resort', '2026-08-08 08:00:00+02', 30, '[]', '2026-06-06 15:14:15.595335+02', 'Sports', 'approved', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (16, 7, 'Open Source Contributor Day', 'Collaborative coding sessions — bring your laptop and contribute to real open-source projects.', 'IBU Innovation Lab', '2026-07-20 10:00:00+02', 60, '[]', '2026-06-06 15:14:38.193143+02', 'Technology', 'approved', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (18, 7, 'Pyramid Scheme Coaching Workshop', 'Learn exclusive wealth-building strategies.', 'Undisclosed Location', '2026-07-01 14:00:00+02', 500, '[]', '2026-06-06 15:14:46.020327+02', 'Business', 'rejected', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (6, 7, 'Balkan Entrepreneur Meetup', 'Monthly gathering of founders, investors, and operators building companies in the Western Balkans.', 'Startup Garage, Skenderija', '2026-08-22 18:00:00+02', 80, '[]', '2026-06-06 15:11:49.401022+02', 'Business', 'pending', NULL);
+INSERT INTO public.events (id, organizer_id, title, description, location, event_date, total_capacity, agenda_data, created_at, category, status, cover_image) VALUES (19, 7, 'Test Event', 'This event was used to test the event creation form.', 'Sarajevo', '2026-10-21 05:50:00+02', 50, '[]', '2026-06-07 00:05:01.831571+02', 'Health & Wellness', 'pending', NULL);
 
 
 --
@@ -365,6 +367,8 @@ INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tick
 INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (10, 12, 'General Admission', 0.00, 50, 23);
 INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (11, 16, 'General Admission', 0.00, 50, 23);
 INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (13, 13, 'Retreat Pass', 120.00, 30, 18);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (15, 19, 'General Admission', 0.00, 20, 0);
+INSERT INTO public.ticket_types (id, event_id, name, price, quantity_limit, tickets_sold) VALUES (16, 19, 'VIP', 20.00, 30, 0);
 
 
 --
@@ -392,7 +396,7 @@ SELECT pg_catalog.setval('public.bookings_id_seq', 3, true);
 -- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.events_id_seq', 18, true);
+SELECT pg_catalog.setval('public.events_id_seq', 20, true);
 
 
 --
@@ -410,7 +414,7 @@ SELECT pg_catalog.setval('public.feedback_id_seq', 3, true);
 -- Name: ticket_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.ticket_types_id_seq', 14, true);
+SELECT pg_catalog.setval('public.ticket_types_id_seq', 16, true);
 
 
 --
@@ -556,11 +560,11 @@ ALTER TABLE ONLY public.ticket_types
     ADD CONSTRAINT ticket_types_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
 
 
--- Completed on 2026-06-06 15:55:54
+-- Completed on 2026-06-07 00:27:35
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict smXiM15f0WCJDvK1jo02PecuQOaZTAYBdSSTEHMM24K85qmREnwZq4dbiW1W7Wz
+\unrestrict 3OPJ3HHxxOmayktAaB73gj6xStjc3HMs3Va3cGQQQUrc7sfEOLs3acheVGWYAh5
 
