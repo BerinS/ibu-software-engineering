@@ -37,12 +37,36 @@ export const findById = async (id) => {
   return result.rows[0];
 };
 
-export const create = async (eventData) => {
-  const { organizer_id, title, description, location, event_date, total_capacity, agenda_data, category } = eventData;
-  const result = await query(
-    `INSERT INTO events (organizer_id, title, description, location, event_date, total_capacity, agenda_data, category)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-    [organizer_id, title, description, location, event_date, total_capacity, JSON.stringify(agenda_data || []), category || 'General']
+/**
+ * Create an event.
+ *
+ * @param {object}      eventData - Fields to insert.
+ * @param {object|null} client    - Optional pg client for use inside a transaction.
+ *                                  When omitted the module-level pool query is used.
+ */
+export const create = async (eventData, client = null) => {
+  const {
+    organizer_id, title, description, location, event_date,
+    total_capacity, agenda_data, category, cover_image,
+  } = eventData;
+  const run = client ? (sql, params) => client.query(sql, params) : query;
+  const result = await run(
+    `INSERT INTO events
+       (organizer_id, title, description, location, event_date,
+        total_capacity, agenda_data, category, cover_image)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     RETURNING *`,
+    [
+      organizer_id,
+      title,
+      description || null,
+      location,
+      event_date,
+      total_capacity,
+      JSON.stringify(agenda_data || []),
+      category || 'General',
+      cover_image || null,
+    ]
   );
   return result.rows[0];
 };

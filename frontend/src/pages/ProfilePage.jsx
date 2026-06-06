@@ -222,19 +222,34 @@ const ProfilePage = () => {
                 )}
               </Box>
 
-              {/* Admin shortcut — Dashboard button */}
-              {role === 'admin' && (
-                <Button
-                  component={Link}
-                  to="/admin"
-                  variant="outlined"
-                  startIcon={<DashboardIcon />}
-                  sx={{ mt: 2, color: '#F59E0B', borderColor: 'rgba(245,158,11,0.35)', fontWeight: 600,
-                    fontSize: '0.85rem',
-                    '&:hover': { borderColor: '#F59E0B', background: 'rgba(245,158,11,0.06)' } }}
-                >
-                  Go to Dashboard
-                </Button>
+              {/* Action buttons — visible for organizer and admin */}
+              {(role === 'organizer' || role === 'admin') && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 2 }}>
+                  {role === 'admin' && (
+                    <Button
+                      component={Link}
+                      to="/admin"
+                      variant="outlined"
+                      startIcon={<DashboardIcon />}
+                      sx={{
+                        color: '#F59E0B', borderColor: 'rgba(245,158,11,0.35)',
+                        fontWeight: 600, fontSize: '0.85rem',
+                        '&:hover': { borderColor: '#F59E0B', background: 'rgba(245,158,11,0.06)' },
+                      }}
+                    >
+                      Go to Dashboard
+                    </Button>
+                  )}
+                  <Button
+                    component={Link}
+                    to="/events/create"
+                    variant="outlined"
+                    startIcon={<AddCircleOutlineIcon />}
+                    sx={ctaBtnSx}
+                  >
+                    Create Event
+                  </Button>
+                </Box>
               )}
             </Box>
           </Box>

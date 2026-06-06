@@ -99,6 +99,25 @@ const Navbar = () => {
               Events
             </Button>
 
+            {/* Create Event — visible to organizers and admins */}
+            {(user?.role === 'organizer' || user?.role === 'admin') && (
+              <Button
+                component={Link}
+                to="/events/create"
+                sx={{
+                  color: '#00D4FF',
+                  fontSize: '0.875rem',
+                  px: 2,
+                  border: '1px solid rgba(0,212,255,0.2)',
+                  borderRadius: '8px',
+                  '&:hover': { color: '#00D4FF', background: 'rgba(0,212,255,0.06)', borderColor: 'rgba(0,212,255,0.4)' },
+                  transition: 'all 0.2s',
+                }}
+              >
+                Create Event
+              </Button>
+            )}
+
             {/* Dashboard link — only visible to admins */}
             {user?.role === 'admin' && (
               <Button

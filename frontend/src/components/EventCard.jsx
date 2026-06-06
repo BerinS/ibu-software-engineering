@@ -4,6 +4,9 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
+// Base URL for uploaded cover images (matches Express static mount point)
+const API_BASE = 'http://localhost:5000';
+
 const EventCard = ({ event, index = 0 }) => {
   const formattedDate = new Date(event.event_date).toLocaleDateString('en-US', {
     month: 'short',
@@ -12,7 +15,13 @@ const EventCard = ({ event, index = 0 }) => {
   });
 
   const month = new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const day = new Date(event.event_date).getDate();
+  const day   = new Date(event.event_date).getDate();
+
+  // Use the organizer-uploaded cover when available; fall back to a deterministic
+  // placeholder so cards always have an image (picsum is seeded by event id).
+  const coverSrc = event.cover_image
+    ? `${API_BASE}/uploads/events/${event.cover_image}`
+    : `https://picsum.photos/seed/${event.id}/400/200`;
 
   return (
     <Card
@@ -62,7 +71,7 @@ const EventCard = ({ event, index = 0 }) => {
         <Box
           className="card-image"
           component="img"
-          src={`https://picsum.photos/seed/${event.id}/400/200`}
+          src={coverSrc}
           alt={event.title}
           sx={{
             width: '100%',
