@@ -3,7 +3,7 @@
 ## Backend Setup Instructions
 ```
 1 - Install NodeJS LTS
-2 - Install PostgreSQL and setup database from init.sql (located in /backend/db)
+2 - Install PostgreSQL and setup database from init.sql (located in /backend/db), db name is 'scanova'
 3 - Once Node.js is installed, navigate to the cloned repo folder and run: npm install
 4 - Make a .env file in /backend with DB credentials.
 5 - Run the backend API in dev mode with: npm run dev
@@ -16,7 +16,9 @@ DB_HOST=localhost
 DB_NAME=scanova
 DB_PASSWORD=your_password
 DB_PORT=5432
+JWT_SECRET=scanova_super_secret_key_change_in_production
 ```
+*Leave the jwt like the example above while testing.
 
 ## Frontend Setup Instructions
 ```

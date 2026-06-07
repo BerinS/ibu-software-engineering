@@ -18,7 +18,7 @@ export const findByEmail = async (email) => {
 
 export const create = async ({ full_name, email, password_hash, role }) => {
   const result = await query(
-    'INSERT INTO users (full_name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, full_name, email, role',
+    'INSERT INTO users (full_name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, full_name, email, role, created_at',
     [full_name, email, password_hash, role || 'attendee']
   );
   return result.rows[0];
