@@ -12,7 +12,7 @@ import PeopleIcon            from '@mui/icons-material/People';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CalendarMonthIcon     from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon        from '@mui/icons-material/LocationOn';
-import AddCircleOutlineIcon  from '@mui/icons-material/AddCircleOutline';
+import AddCircleOutlineIcon  from '@mui/icons-material/AddCircleOutlined';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';

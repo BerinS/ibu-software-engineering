@@ -14,7 +14,7 @@ import ArrowForwardIcon       from '@mui/icons-material/ArrowForward';
 import DashboardIcon          from '@mui/icons-material/Dashboard';
 import QrCode2Icon            from '@mui/icons-material/QrCode2';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
-import SpaceDashboardIcon     from '@mui/icons-material/SpaceDashboard';
+import SpaceDashboardIcon     from '@mui/icons-material/DashboardCustomize';
 import { Link } from 'react-router-dom';
 import Navbar    from '../components/Navbar';
 import EventCard from '../components/EventCard';
