@@ -616,20 +616,6 @@ const EventDetailPage = () => {
                   >
                     View My Ticket (QR)
                   </Button>
-                  {directory.length > 0 && (
-                    <Button
-                      fullWidth
-                      variant="text"
-                      startIcon={<PeopleAltIcon />}
-                      onClick={() => setDirectoryOpen(true)}
-                      sx={{
-                        mt: 1.5, color: '#7A8A99', fontSize: '0.82rem',
-                        '&:hover': { color: '#F0F4F8', background: 'rgba(240,244,248,0.04)' },
-                      }}
-                    >
-                      View Attendee Directory ({directory.length})
-                    </Button>
-                  )}
                 </>
               ) : onWaitlist ? (
                 <Box sx={{

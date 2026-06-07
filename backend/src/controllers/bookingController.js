@@ -158,26 +158,25 @@ export const getWaitlistStatus = async (req, res, next) => {
   }
 };
 
-// GET /api/events/:id/directory  — attendees list visible to other attendees
+// GET /api/events/:id/directory  — attendees list visible only to the organizer/admin
 export const getEventDirectory = async (req, res, next) => {
   try {
     const event_id = req.params.id;
+    const role     = req.user.role;
     const user_id  = req.user.id;
 
-    // Must have a confirmed booking to see directory
-    const access = await query(
-      `SELECT b.id FROM bookings b
-       JOIN ticket_types tt ON tt.id = b.ticket_type_id
-       WHERE tt.event_id = $1 AND b.user_id = $2 AND b.status = 'confirmed'`,
-      [event_id, user_id]
-    );
-    // Organizers and admins always have access
-    if (access.rows.length === 0 && req.user.role === 'attendee') {
-      throw ApiError.forbidden('Only confirmed attendees can view the attendee directory');
+    // Only organizer of this event or admin can view directory
+    if (role !== 'admin') {
+      const eventRes = await query('SELECT organizer_id FROM events WHERE id = $1', [event_id]);
+      const ev = eventRes.rows[0];
+      if (!ev) throw ApiError.notFound('Event');
+      if (ev.organizer_id !== user_id) {
+        throw ApiError.forbidden('Only the event organizer can view the attendee directory');
+      }
     }
 
     const result = await query(
-      `SELECT u.full_name, tt.name AS ticket_type_name, b.booked_at
+      `SELECT u.full_name, u.email, tt.name AS ticket_type_name, b.booked_at, b.checked_in_at
        FROM bookings b
        JOIN users        u  ON u.id  = b.user_id
        JOIN ticket_types tt ON tt.id = b.ticket_type_id
