@@ -4,6 +4,7 @@ import {
   Box, Typography, Chip, Button, Skeleton, Divider, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Alert, Rating, TextField, Snackbar, CircularProgress, InputAdornment,
+  Avatar,
 } from '@mui/material';
 import CalendarMonthIcon      from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon         from '@mui/icons-material/LocationOn';
@@ -14,6 +15,8 @@ import AccessTimeIcon         from '@mui/icons-material/AccessTime';
 import QrCode2Icon            from '@mui/icons-material/QrCode2';
 import StarIcon               from '@mui/icons-material/Star';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
+import HourglassTopIcon       from '@mui/icons-material/HourglassTop';
+import PeopleAltIcon          from '@mui/icons-material/PeopleAlt';
 import Navbar  from '../components/Navbar';
 import Footer  from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
@@ -56,6 +59,15 @@ const EventDetailPage = () => {
   const [feedbackErr,     setFeedbackErr]     = useState('');
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
+  // Waitlist
+  const [onWaitlist,    setOnWaitlist]    = useState(false);
+  const [waitlistBusy,  setWaitlistBusy]  = useState(false);
+  const [waitlistErr,   setWaitlistErr]   = useState('');
+
+  // Attendee directory
+  const [directory,     setDirectory]     = useState([]);
+  const [directoryOpen, setDirectoryOpen] = useState(false);
+
   // Snackbar
   const [snack, setSnack] = useState({ open: false, msg: '', color: '#4ADE80' });
 
@@ -87,7 +99,7 @@ const EventDetailPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Check if logged-in user already has a booking for this event
+  // Check if logged-in user already has a booking / waitlist spot for this event
   const checkExistingBooking = useCallback(() => {
     if (!user) return;
     fetch('http://localhost:5000/api/users/me/bookings', { headers: authHeaders })
@@ -96,6 +108,18 @@ const EventDetailPage = () => {
         const existing = bookings.find(b => String(b.event_id) === String(id));
         if (existing) setBooking(existing);
       })
+      .catch(() => {});
+
+    // Check waitlist status
+    fetch(`${API_BASE}/api/events/${id}/waitlist/me`, { headers: authHeaders })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.waitlisted) setOnWaitlist(true); })
+      .catch(() => {});
+
+    // Load attendee directory (visible to attendees with confirmed booking)
+    fetch(`${API_BASE}/api/events/${id}/directory`, { headers: authHeaders })
+      .then(r => r.ok ? r.json() : [])
+      .then(setDirectory)
       .catch(() => {});
   }, [user, id]);
 
@@ -153,6 +177,28 @@ const EventDetailPage = () => {
       setBookingErr(err.message);
     } finally {
       setBookingBusy(false);
+    }
+  };
+
+  /* ── Join waitlist ── */
+  const handleJoinWaitlist = async () => {
+    if (!user) { navigate('/login'); return; }
+    setWaitlistBusy(true);
+    setWaitlistErr('');
+    try {
+      const res = await fetch(`${API_BASE}/api/events/${id}/waitlist`, {
+        method: 'POST',
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Could not join waitlist');
+      setOnWaitlist(true);
+      setSnack({ open: true, msg: "You're on the waitlist!", color: '#F59E0B' });
+    } catch (err) {
+      setWaitlistErr(err.message);
+      setSnack({ open: true, msg: err.message, color: '#F87171' });
+    } finally {
+      setWaitlistBusy(false);
     }
   };
 
@@ -556,42 +602,93 @@ const EventDetailPage = () => {
 
               {/* Already booked — show QR button */}
               {booking ? (
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<QrCode2Icon />}
-                  onClick={() => setQrOpen(true)}
-                  sx={{
-                    mt: 3, borderColor: 'rgba(0,212,255,0.35)', color: '#00D4FF',
-                    fontWeight: 700, py: 1.4, borderRadius: '10px',
-                    '&:hover': { borderColor: '#00D4FF', background: 'rgba(0,212,255,0.08)' },
-                  }}
-                >
-                  View My Ticket (QR)
-                </Button>
+                <>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<QrCode2Icon />}
+                    onClick={() => setQrOpen(true)}
+                    sx={{
+                      mt: 3, borderColor: 'rgba(0,212,255,0.35)', color: '#00D4FF',
+                      fontWeight: 700, py: 1.4, borderRadius: '10px',
+                      '&:hover': { borderColor: '#00D4FF', background: 'rgba(0,212,255,0.08)' },
+                    }}
+                  >
+                    View My Ticket (QR)
+                  </Button>
+                  {directory.length > 0 && (
+                    <Button
+                      fullWidth
+                      variant="text"
+                      startIcon={<PeopleAltIcon />}
+                      onClick={() => setDirectoryOpen(true)}
+                      sx={{
+                        mt: 1.5, color: '#7A8A99', fontSize: '0.82rem',
+                        '&:hover': { color: '#F0F4F8', background: 'rgba(240,244,248,0.04)' },
+                      }}
+                    >
+                      View Attendee Directory ({directory.length})
+                    </Button>
+                  )}
+                </>
+              ) : onWaitlist ? (
+                <Box sx={{
+                  mt: 3, p: 2, borderRadius: '10px', textAlign: 'center',
+                  background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.25)',
+                }}>
+                  <HourglassTopIcon sx={{ fontSize: 22, color: '#F59E0B', mb: 0.5 }} />
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#F59E0B' }}>
+                    You're on the waitlist
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#7A8A99', mt: 0.25 }}>
+                    We'll notify you if a spot opens up
+                  </Typography>
+                </Box>
+              ) : availPct === 0 ? (
+                <>
+                  <Box sx={{
+                    mt: 3, p: 1.5, borderRadius: '10px', textAlign: 'center',
+                    background: 'rgba(240,244,248,0.04)', border: '1px solid rgba(240,244,248,0.08)',
+                    mb: 1.5,
+                  }}>
+                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#7A8A99' }}>
+                      Sold Out
+                    </Typography>
+                  </Box>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={waitlistBusy ? <CircularProgress size={14} sx={{ color: '#F59E0B' }} /> : <HourglassTopIcon />}
+                    onClick={handleJoinWaitlist}
+                    disabled={waitlistBusy}
+                    sx={{
+                      borderColor: 'rgba(245,158,11,0.4)', color: '#F59E0B',
+                      fontWeight: 700, py: 1.4, borderRadius: '10px',
+                      '&:hover': { borderColor: '#F59E0B', background: 'rgba(245,158,11,0.06)' },
+                    }}
+                  >
+                    Join Waitlist
+                  </Button>
+                </>
               ) : (
                 <Button
                   fullWidth
                   variant="contained"
-                  disabled={availPct === 0 || !selectedTT}
+                  disabled={!selectedTT}
                   onClick={() => {
                     if (!user) { navigate('/login'); return; }
                     setBookingOpen(true);
                   }}
                   sx={{
                     mt: 3,
-                    background: availPct === 0
-                      ? 'rgba(240,244,248,0.06)'
-                      : 'linear-gradient(135deg,#00D4FF,#0099bb)',
-                    color: availPct === 0 ? '#7A8A99' : '#080C10',
+                    background: 'linear-gradient(135deg,#00D4FF,#0099bb)',
+                    color: '#080C10',
                     fontWeight: 700, py: 1.4, borderRadius: '10px', fontSize: '0.92rem',
-                    boxShadow: availPct === 0 ? 'none' : '0 0 24px rgba(0,212,255,0.25)',
-                    '&:hover': {
-                      background: availPct === 0 ? undefined : 'linear-gradient(135deg,#00bfea,#008aaa)',
-                    },
+                    boxShadow: '0 0 24px rgba(0,212,255,0.25)',
+                    '&:hover': { background: 'linear-gradient(135deg,#00bfea,#008aaa)' },
                   }}
                 >
-                  {availPct === 0 ? 'Sold Out' : 'Get Tickets'}
+                  Get Tickets
                 </Button>
               )}
             </Box>
@@ -731,6 +828,45 @@ const EventDetailPage = () => {
                 ? `Pay $${Number(selectedTicket?.price ?? 0).toFixed(2)}`
                 : 'Confirm'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Attendee Directory dialog ── */}
+      <Dialog
+        open={directoryOpen}
+        onClose={() => setDirectoryOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { background: '#0E1318', border: '1px solid rgba(240,244,248,0.08)', borderRadius: '16px' } }}
+      >
+        <DialogTitle sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, color: '#F0F4F8', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PeopleAltIcon sx={{ color: '#00D4FF', fontSize: 20 }} />
+          Attendee Directory
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: '0.8rem', color: '#4A5568', mb: 2 }}>
+            {directory.length} confirmed attendee{directory.length !== 1 ? 's' : ''} for this event
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {directory.map((a, i) => (
+              <Box key={i} sx={{
+                display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5,
+                borderRadius: '10px', background: 'rgba(14,19,24,0.7)',
+                border: '1px solid rgba(240,244,248,0.05)',
+              }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(0,212,255,0.1)', color: '#00D4FF', fontSize: '0.72rem', fontWeight: 700 }}>
+                  {(a.full_name ?? '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#F0F4F8' }}>{a.full_name}</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#4A5568' }}>{a.ticket_type_name}</Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setDirectoryOpen(false)} sx={{ color: '#7A8A99' }}>Close</Button>
         </DialogActions>
       </Dialog>
 

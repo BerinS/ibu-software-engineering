@@ -100,6 +100,97 @@ export const checkInBooking = async (req, res, next) => {
   }
 };
 
+// POST /api/events/:id/waitlist  — join waitlist when event is sold out
+export const joinWaitlist = async (req, res, next) => {
+  try {
+    const event_id = req.params.id;
+    const user_id  = req.user.id;
+
+    // Find any ticket type for this event with available space
+    const ttResult = await query(
+      `SELECT tt.id, tt.quantity_limit, tt.tickets_sold
+       FROM ticket_types tt WHERE tt.event_id = $1
+       ORDER BY tt.price ASC LIMIT 1`,
+      [event_id]
+    );
+    if (ttResult.rows.length === 0) throw ApiError.notFound('Event has no ticket types');
+
+    const tt = ttResult.rows[0];
+
+    // Check if already waitlisted or confirmed
+    const existing = await query(
+      `SELECT b.id, b.status FROM bookings b
+       JOIN ticket_types tt ON tt.id = b.ticket_type_id
+       WHERE tt.event_id = $1 AND b.user_id = $2`,
+      [event_id, user_id]
+    );
+    if (existing.rows.length > 0) {
+      const s = existing.rows[0].status;
+      if (s === 'confirmed')   throw ApiError.badRequest('You already have a confirmed ticket');
+      if (s === 'waitlisted')  throw ApiError.badRequest('You are already on the waitlist');
+    }
+
+    const entry = await query(
+      `INSERT INTO bookings (user_id, ticket_type_id, status, qr_hash)
+       VALUES ($1, $2, 'waitlisted', NULL) RETURNING *`,
+      [user_id, tt.id]
+    );
+
+    res.status(201).json({ ...entry.rows[0], message: 'You have been added to the waitlist' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/events/:id/waitlist/me  — check if current user is on waitlist
+export const getWaitlistStatus = async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT b.id, b.status FROM bookings b
+       JOIN ticket_types tt ON tt.id = b.ticket_type_id
+       WHERE tt.event_id = $1 AND b.user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    const entry = result.rows[0] || null;
+    res.json({ waitlisted: entry?.status === 'waitlisted', confirmed: entry?.status === 'confirmed', entry });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/events/:id/directory  — attendees list visible to other attendees
+export const getEventDirectory = async (req, res, next) => {
+  try {
+    const event_id = req.params.id;
+    const user_id  = req.user.id;
+
+    // Must have a confirmed booking to see directory
+    const access = await query(
+      `SELECT b.id FROM bookings b
+       JOIN ticket_types tt ON tt.id = b.ticket_type_id
+       WHERE tt.event_id = $1 AND b.user_id = $2 AND b.status = 'confirmed'`,
+      [event_id, user_id]
+    );
+    // Organizers and admins always have access
+    if (access.rows.length === 0 && req.user.role === 'attendee') {
+      throw ApiError.forbidden('Only confirmed attendees can view the attendee directory');
+    }
+
+    const result = await query(
+      `SELECT u.full_name, tt.name AS ticket_type_name, b.booked_at
+       FROM bookings b
+       JOIN users        u  ON u.id  = b.user_id
+       JOIN ticket_types tt ON tt.id = b.ticket_type_id
+       WHERE tt.event_id = $1 AND b.status = 'confirmed'
+       ORDER BY b.booked_at ASC`,
+      [event_id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/events/:id/attendees  (organizer only)
 export const getEventAttendees = async (req, res, next) => {
   try {

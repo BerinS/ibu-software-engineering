@@ -9,6 +9,7 @@ import {
   getUsers,
   getUserProfile,
 } from '../controllers/userController.js';
+import { getOrganizerFeedback } from '../controllers/feedbackController.js';
 import { protect, requireRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -37,9 +38,10 @@ router.post('/login',    loginValidation,    loginUser);
 
 // ── Authenticated user routes ──────────────────────────────────────────────
 
-router.get('/me',          protect, getMe);
-router.get('/me/events',   protect, getMyEvents);
-router.get('/me/bookings', protect, getMyBookings);
+router.get('/me',           protect, getMe);
+router.get('/me/events',    protect, getMyEvents);
+router.get('/me/bookings',  protect, getMyBookings);
+router.get('/me/feedback',  protect, getOrganizerFeedback);
 
 // ── Admin-only routes ──────────────────────────────────────────────────────
 

@@ -1,8 +1,8 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { getEvents, getEventById, getEventTickets, createEvent, updateEvent, cancelEvent } from '../controllers/eventController.js';
-import { getEventAttendees } from '../controllers/bookingController.js';
-import { submitFeedback, getEventFeedback } from '../controllers/feedbackController.js';
+import { getEventAttendees, joinWaitlist, getWaitlistStatus, getEventDirectory } from '../controllers/bookingController.js';
+import { submitFeedback, getEventFeedback, getOrganizerFeedback } from '../controllers/feedbackController.js';
 import { protect }           from '../middleware/authMiddleware.js';
 import { uploadEventCover }  from '../middleware/upload.js';
 
@@ -144,6 +144,15 @@ router.route('/:id/tickets')
 
 router.route('/:id/attendees')
   .get(protect, getEventAttendees);
+
+router.route('/:id/directory')
+  .get(protect, getEventDirectory);
+
+router.route('/:id/waitlist')
+  .post(protect, joinWaitlist);
+
+router.route('/:id/waitlist/me')
+  .get(protect, getWaitlistStatus);
 
 router.route('/:id/feedback')
   .get(getEventFeedback)
