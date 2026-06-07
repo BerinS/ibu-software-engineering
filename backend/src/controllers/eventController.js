@@ -1,7 +1,7 @@
 import * as Event      from '../models/eventModel.js';
 import * as TicketType from '../models/ticketTypeModel.js';
 
-import { pool }        from '../config/db.js';
+import { pool, query } from '../config/db.js';
 import { validationResult } from 'express-validator';
 import ApiError from '../utils/ApiError.js';
 
@@ -32,6 +32,76 @@ export const getEventById = async (req, res, next) => {
     const event = await Event.findById(req.params.id);
     if (!event) throw ApiError.notFound('Event');
     res.status(200).json(event);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PUT /api/events/:id  — organizer updates their own event
+export const updateEvent = async (req, res, next) => {
+  try {
+    const eventId = req.params.id;
+    const userId  = req.user.id;
+    const role    = req.user.role;
+
+    // Fetch existing event
+    const existing = await Event.findById(eventId);
+    if (!existing) throw ApiError.notFound('Event');
+
+    // Only the organizer or an admin can edit
+    if (role !== 'admin' && existing.organizer_id !== userId) {
+      throw ApiError.forbidden('You do not have permission to edit this event');
+    }
+
+    const { title, description, location, event_date, total_capacity, category } = req.body;
+
+    const result = await query(
+      `UPDATE events
+         SET title          = COALESCE($1, title),
+             description    = COALESCE($2, description),
+             location       = COALESCE($3, location),
+             event_date     = COALESCE($4, event_date),
+             total_capacity = COALESCE($5, total_capacity),
+             category       = COALESCE($6, category)
+       WHERE id = $7
+       RETURNING *`,
+      [
+        title        || null,
+        description  !== undefined ? description : null,
+        location     || null,
+        event_date   || null,
+        total_capacity ? parseInt(total_capacity, 10) : null,
+        category     || null,
+        eventId,
+      ]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /api/events/:id/cancel  — organizer cancels their own event
+export const cancelEvent = async (req, res, next) => {
+  try {
+    const eventId = req.params.id;
+    const userId  = req.user.id;
+    const role    = req.user.role;
+
+    const existing = await Event.findById(eventId);
+    if (!existing) throw ApiError.notFound('Event');
+
+    if (role !== 'admin' && existing.organizer_id !== userId) {
+      throw ApiError.forbidden('You do not have permission to cancel this event');
+    }
+
+    const result = await query(
+      `UPDATE events SET status = 'cancelled' WHERE id = $1 RETURNING *`,
+      [eventId]
+    );
+
+    res.json(result.rows[0]);
   } catch (error) {
     next(error);
   }

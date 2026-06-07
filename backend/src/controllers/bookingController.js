@@ -47,6 +47,59 @@ export const createBooking = async (req, res, next) => {
   }
 };
 
+// POST /api/bookings/checkin  — organizer scans QR and checks in attendee
+export const checkInBooking = async (req, res, next) => {
+  try {
+    const { qr_hash } = req.body;
+    if (!qr_hash) throw ApiError.badRequest('qr_hash is required');
+
+    // Find booking by QR hash
+    const result = await query(
+      `SELECT b.*, u.full_name, u.email,
+              e.title AS event_title, e.organizer_id,
+              tt.name AS ticket_type_name
+       FROM bookings b
+       JOIN users u        ON u.id  = b.user_id
+       JOIN ticket_types tt ON tt.id = b.ticket_type_id
+       JOIN events e        ON e.id  = tt.event_id
+       WHERE b.qr_hash = $1`,
+      [qr_hash]
+    );
+
+    const booking = result.rows[0];
+    if (!booking) throw ApiError.notFound('Ticket');
+
+    // Only the event organizer or admin can check in
+    const userId = req.user.id;
+    const role   = req.user.role;
+    if (role !== 'admin' && booking.organizer_id !== userId) {
+      throw ApiError.forbidden('You are not the organizer of this event');
+    }
+
+    if (booking.checked_in_at) {
+      return res.status(200).json({
+        alreadyCheckedIn: true,
+        booking,
+        message: `Already checked in at ${new Date(booking.checked_in_at).toLocaleTimeString()}`,
+      });
+    }
+
+    // Mark as checked in
+    const updated = await query(
+      'UPDATE bookings SET checked_in_at = NOW() WHERE id = $1 RETURNING *',
+      [booking.id]
+    );
+
+    res.status(200).json({
+      alreadyCheckedIn: false,
+      booking: { ...updated.rows[0], full_name: booking.full_name, email: booking.email, event_title: booking.event_title, ticket_type_name: booking.ticket_type_name },
+      message: `Check-in successful for ${booking.full_name}`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/events/:id/attendees  (organizer only)
 export const getEventAttendees = async (req, res, next) => {
   try {
