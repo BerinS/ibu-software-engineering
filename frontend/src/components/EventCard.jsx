@@ -5,8 +5,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-// Base URL for uploaded cover images (matches Express static mount point)
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../config.js';
 
 const EventCard = ({ event, index = 0 }) => {
   const navigate = useNavigate();

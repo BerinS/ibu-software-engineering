@@ -15,6 +15,7 @@ import CloseIcon                from '@mui/icons-material/Close';
 import { Link, useNavigate }    from 'react-router-dom';
 import Navbar    from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -315,7 +316,7 @@ const CreateEventPage = () => {
         ));
       }
 
-      const response = await fetch('http://localhost:5000/api/events', {
+      const response = await fetch(`${API_BASE}/api/events`, {
         method: 'POST',
         headers: {
           // No Content-Type here — the browser sets multipart/form-data + boundary automatically

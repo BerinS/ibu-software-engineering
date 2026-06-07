@@ -6,6 +6,7 @@ import EventCard from '../components/EventCard';
 import EventCarousel from '../components/EventCarousel';
 import Footer from '../components/Footer';
 import { styles } from './AllEvents.style';
+import { API_BASE } from '../config.js';
 
 const EventSkeleton = () => (
   <Box sx={styles.skeleton.wrapper}>
@@ -37,7 +38,7 @@ const AllEvents = () => {
   const [activeSort, setActiveSort] = useState('date-asc');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/events')
+    fetch(`${API_BASE}/api/events`)
       .then((res) => res.json())
       .then((data) => { setEvents(data); setLoading(false); })
       .catch((err) => { console.error('Error fetching events:', err); setLoading(false); });

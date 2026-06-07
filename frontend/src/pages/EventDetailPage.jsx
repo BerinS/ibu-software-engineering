@@ -17,8 +17,7 @@ import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
 import Navbar  from '../components/Navbar';
 import Footer  from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
-
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../config.js';
 const QR_URL   = (hash) => `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${hash}`;
 
 /* ─────────────────────────────────────────────── */
@@ -90,7 +89,7 @@ const EventDetailPage = () => {
   // Check if logged-in user already has a booking for this event
   const checkExistingBooking = useCallback(() => {
     if (!user) return;
-    fetch('http://localhost:5000/api/users/me/bookings', { headers: authHeaders })
+    fetch(`${API_BASE}/api/users/me/bookings`, { headers: authHeaders })
       .then(r => r.ok ? r.json() : [])
       .then(bookings => {
         const existing = bookings.find(b => String(b.event_id) === String(id));

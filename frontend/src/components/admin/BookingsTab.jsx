@@ -6,6 +6,7 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import { useAuth }       from '../../context/AuthContext';
 import ConfirmDialog     from './ConfirmDialog';
+import { API_BASE }     from '../../config.js';
 
 const STATUS_STYLES = {
   confirmed:  { color: '#4ADE80', bg: 'rgba(74,222,128,0.08)',  border: 'rgba(74,222,128,0.2)'  },
@@ -31,7 +32,7 @@ const BookingsTab = ({ notify, onMutate }) => {
   const fetchBookings = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/admin/bookings', { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/api/admin/bookings`, { headers: authHeaders });
       if (!res.ok) throw new Error((await res.json()).message || 'Failed to load bookings');
       setBookings(await res.json());
     } catch (err) {
@@ -53,7 +54,7 @@ const BookingsTab = ({ notify, onMutate }) => {
   const handleDelete = async () => {
     setConfirm((prev) => ({ ...prev, loading: true }));
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/bookings/${confirm.bookingId}`, {
+      const res = await fetch(`${API_BASE}/api/admin/bookings/${confirm.bookingId}`, {
         method: 'DELETE', headers: authHeaders,
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Delete failed');

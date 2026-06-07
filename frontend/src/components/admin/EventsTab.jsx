@@ -11,6 +11,7 @@ import PeopleIcon             from '@mui/icons-material/People';
 import PersonIcon             from '@mui/icons-material/Person';
 import { useAuth }            from '../../context/AuthContext';
 import ConfirmDialog          from './ConfirmDialog';
+import { API_BASE }          from '../../config.js';
 
 const STATUS_COLUMNS = [
   { key: 'pending',  label: 'Pending',  color: '#F59E0B', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)'  },
@@ -163,7 +164,7 @@ const EventsTab = ({ notify, onMutate }) => {
   const fetchEvents = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/admin/events', { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/api/admin/events`, { headers: authHeaders });
       if (!res.ok) throw new Error((await res.json()).message || 'Failed to load events');
       setEvents(await res.json());
     } catch (err) {
@@ -186,7 +187,7 @@ const EventsTab = ({ notify, onMutate }) => {
   const handleApprove = async (eventId) => {
     setActioning(`approve-${eventId}`);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/events/${eventId}/approve`, {
+      const res = await fetch(`${API_BASE}/api/admin/events/${eventId}/approve`, {
         method: 'PATCH', headers: authHeaders,
       });
       const data = await res.json();
@@ -210,7 +211,7 @@ const EventsTab = ({ notify, onMutate }) => {
   const handleReject = async (eventId) => {
     setActioning(`reject-${eventId}`);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/events/${eventId}/reject`, {
+      const res = await fetch(`${API_BASE}/api/admin/events/${eventId}/reject`, {
         method: 'PATCH', headers: authHeaders,
       });
       const data = await res.json();
@@ -235,7 +236,7 @@ const EventsTab = ({ notify, onMutate }) => {
   const handleDelete = async () => {
     setConfirm((prev) => ({ ...prev, loading: true }));
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/events/${confirm.eventId}`, {
+      const res = await fetch(`${API_BASE}/api/admin/events/${confirm.eventId}`, {
         method: 'DELETE', headers: authHeaders,
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Delete failed');

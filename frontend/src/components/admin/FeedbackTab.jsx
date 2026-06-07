@@ -7,6 +7,7 @@ import DeleteOutlineIcon      from '@mui/icons-material/DeleteOutlined';
 import ChatBubbleOutlineIcon  from '@mui/icons-material/ChatBubbleOutlined';
 import { useAuth }       from '../../context/AuthContext';
 import ConfirmDialog     from './ConfirmDialog';
+import { API_BASE }     from '../../config.js';
 
 const formatDate = (iso) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -26,7 +27,7 @@ const FeedbackTab = ({ notify, onMutate }) => {
   const fetchFeedback = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/admin/feedback', { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/api/admin/feedback`, { headers: authHeaders });
       if (!res.ok) throw new Error((await res.json()).message || 'Failed to load feedback');
       setFeedback(await res.json());
     } catch (err) {
@@ -48,7 +49,7 @@ const FeedbackTab = ({ notify, onMutate }) => {
   const handleDelete = async () => {
     setConfirm((prev) => ({ ...prev, loading: true }));
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/feedback/${confirm.feedbackId}`, {
+      const res = await fetch(`${API_BASE}/api/admin/feedback/${confirm.feedbackId}`, {
         method: 'DELETE', headers: authHeaders,
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Delete failed');

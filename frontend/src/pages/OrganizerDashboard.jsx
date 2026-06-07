@@ -24,8 +24,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
-
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../config.js';
 
 const CATEGORIES = [
   'General','Technology','Music','Business',

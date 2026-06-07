@@ -13,6 +13,7 @@ import EventsTab           from '../components/admin/EventsTab';
 import BookingsTab         from '../components/admin/BookingsTab';
 import FeedbackTab         from '../components/admin/FeedbackTab';
 import { useAuth }         from '../context/AuthContext';
+import { API_BASE }        from '../config.js';
 
 // ── Stats bar ──────────────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ const AdminDashboard = () => {
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/stats', { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/api/admin/stats`, { headers: authHeaders });
       if (res.ok) setStats(await res.json());
     } finally {
       setStatsLoading(false);

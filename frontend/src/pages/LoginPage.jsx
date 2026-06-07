@@ -6,6 +6,7 @@ import {
 import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config.js';
 
 // ── Client-side validation ─────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ const LoginPage = () => {
     setServerError('');
 
     try {
-      const res  = await fetch('http://localhost:5000/api/users/login', {
+      const res  = await fetch(`${API_BASE}/api/users/login`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(form),

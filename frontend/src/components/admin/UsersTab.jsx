@@ -7,6 +7,7 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
+import { API_BASE } from '../../config.js';
 
 const ROLE_STYLES = {
   admin:     { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',   border: 'rgba(245,158,11,0.3)'  },
@@ -39,7 +40,7 @@ const UsersTab = ({ notify, onMutate }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users', { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/api/admin/users`, { headers: authHeaders });
       if (!res.ok) throw new Error((await res.json()).message || 'Failed to load users');
       setUsers(await res.json());
     } catch (err) {
@@ -55,7 +56,7 @@ const UsersTab = ({ notify, onMutate }) => {
   const handleRoleChange = async (userId, newRole) => {
     setRoleUpdating((prev) => ({ ...prev, [userId]: true }));
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/role`, {
+      const res = await fetch(`${API_BASE}/api/admin/users/${userId}/role`, {
         method:  'PATCH',
         headers: authHeaders,
         body:    JSON.stringify({ role: newRole }),
@@ -83,7 +84,7 @@ const UsersTab = ({ notify, onMutate }) => {
   const handleDelete = async () => {
     setConfirm((prev) => ({ ...prev, loading: true }));
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${confirm.userId}`, {
+      const res = await fetch(`${API_BASE}/api/admin/users/${confirm.userId}`, {
         method:  'DELETE',
         headers: authHeaders,
       });

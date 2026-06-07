@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import Navbar    from '../components/Navbar';
 import EventCard from '../components/EventCard';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../config.js';
 
 const QR_URL = (hash) => `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${hash}`;
 
@@ -220,14 +221,14 @@ const ProfilePage = () => {
   // Fetch both in parallel on mount
   useEffect(() => {
     // My organised events (only relevant for organizer / admin but we fetch anyway)
-    fetch('http://localhost:5000/api/users/me/events', { headers: authHeaders })
+    fetch(`${API_BASE}/api/users/me/events`, { headers: authHeaders })
       .then((r) => r.ok ? r.json() : Promise.reject(r))
       .then((data) => setMyEvents(data))
       .catch(() => setEventsError('Could not load your events.'))
       .finally(() => setEventsLoading(false));
 
     // My bookings
-    fetch('http://localhost:5000/api/users/me/bookings', { headers: authHeaders })
+    fetch(`${API_BASE}/api/users/me/bookings`, { headers: authHeaders })
       .then((r) => r.ok ? r.json() : Promise.reject(r))
       .then((data) => setMyBookings(data))
       .catch(() => setBookingsError('Could not load your bookings.'))
