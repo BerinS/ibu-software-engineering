@@ -27,6 +27,7 @@ const EventCard = ({ event, index = 0 }) => {
 
   return (
     <Card
+      onClick={() => navigate(`/events/${event.id}`)}
       sx={{
         height: '100%',
         display: 'flex',
