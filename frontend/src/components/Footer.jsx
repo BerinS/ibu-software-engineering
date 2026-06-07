@@ -1,9 +1,14 @@
 import React from 'react';
 import { Box, Typography, Divider } from '@mui/material';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import { Link } from 'react-router-dom';
 import { GUTTER } from '../pages/AllEvents.style';
 
-const NAV_LINKS = ['Events', 'About', 'Contact'];
+const NAV_LINKS = [
+  { label: 'Events',  to: '/'        },
+  { label: 'About',   to: '/about'   },
+  { label: 'Contact', to: '/contact' },
+];
 
 const Footer = () => (
   <Box
@@ -67,16 +72,19 @@ const Footer = () => (
       <Box sx={{ display: 'flex', gap: { xs: 3, sm: 4 } }}>
         {NAV_LINKS.map((link) => (
           <Typography
-            key={link}
+            key={link.label}
+            component={Link}
+            to={link.to}
             sx={{
               fontSize: '0.85rem',
               color: '#7A8A99',
               cursor: 'pointer',
+              textDecoration: 'none',
               '&:hover': { color: '#F0F4F8' },
               transition: 'color 0.2s',
             }}
           >
-            {link}
+            {link.label}
           </Typography>
         ))}
       </Box>
