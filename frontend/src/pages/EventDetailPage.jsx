@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Chip, Button, Skeleton, Divider, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Alert, Rating, TextField, Snackbar, CircularProgress,
+  Alert, Rating, TextField, Snackbar, CircularProgress, InputAdornment,
 } from '@mui/material';
 import CalendarMonthIcon      from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon         from '@mui/icons-material/LocationOn';
@@ -39,6 +39,13 @@ const EventDetailPage = () => {
   const [bookingBusy, setBookingBusy] = useState(false);
   const [bookingErr,  setBookingErr]  = useState('');
   const [bookingOpen, setBookingOpen] = useState(false);   // confirmation dialog
+
+  // Payment form state
+  const [cardNumber,     setCardNumber]     = useState('');
+  const [cardName,       setCardName]       = useState('');
+  const [cardExpiry,     setCardExpiry]     = useState('');
+  const [cardCvv,        setCardCvv]        = useState('');
+  const [paymentErr,     setPaymentErr]     = useState('');
   const [qrOpen,      setQrOpen]      = useState(false);   // QR dialog
 
   // Feedback
@@ -95,10 +102,37 @@ const EventDetailPage = () => {
   useEffect(() => { loadPage(); }, [loadPage]);
   useEffect(() => { checkExistingBooking(); }, [checkExistingBooking]);
 
+  /* ── Payment helpers ── */
+  const formatCardNumber = (val) =>
+    val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+
+  const formatExpiry = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 4);
+    return digits.length >= 3 ? `${digits.slice(0,2)}/${digits.slice(2)}` : digits;
+  };
+
+  const selectedTicket = ticketTypes.find(t => t.id === selectedTT);
+  const isPaidTicket   = selectedTicket && Number(selectedTicket.price) > 0;
+
+  const validatePayment = () => {
+    if (!isPaidTicket) return true;
+    const digits = cardNumber.replace(/\s/g, '');
+    if (digits.length < 16)        { setPaymentErr('Please enter a valid 16-digit card number'); return false; }
+    if (!cardName.trim())          { setPaymentErr('Please enter the cardholder name'); return false; }
+    if (cardExpiry.length < 5)     { setPaymentErr('Please enter a valid expiry date (MM/YY)'); return false; }
+    if (cardCvv.length < 3)        { setPaymentErr('Please enter a valid CVV'); return false; }
+    return true;
+  };
+
+  const resetPayment = () => {
+    setCardNumber(''); setCardName(''); setCardExpiry(''); setCardCvv(''); setPaymentErr('');
+  };
+
   /* ── Book ticket ── */
   const handleBook = async () => {
     if (!user) { navigate('/login'); return; }
     if (!selectedTT) return;
+    if (!validatePayment()) return;
     setBookingBusy(true);
     setBookingErr('');
     try {
@@ -567,39 +601,119 @@ const EventDetailPage = () => {
 
       <Footer />
 
-      {/* ── Booking confirmation dialog ── */}
+      {/* ── Booking / Payment dialog ── */}
       <Dialog
         open={bookingOpen}
-        onClose={() => { if (!bookingBusy) setBookingOpen(false); }}
-        PaperProps={{ sx: { background: '#0E1318', border: '1px solid rgba(240,244,248,0.08)', borderRadius: '16px', minWidth: 340 } }}
+        onClose={() => { if (!bookingBusy) { setBookingOpen(false); resetPayment(); } }}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { background: '#0E1318', border: '1px solid rgba(240,244,248,0.08)', borderRadius: '16px' } }}
       >
         <DialogTitle sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, color: '#F0F4F8' }}>
-          Confirm Booking
+          {isPaidTicket ? 'Payment Details' : 'Confirm Booking'}
         </DialogTitle>
-        <DialogContent>
-          {bookingErr && (
-            <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>
-              {bookingErr}
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
+
+          {/* Order summary */}
+          <Box sx={{ p: 2, borderRadius: '10px', background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.1)' }}>
+            <Typography sx={{ fontSize: '0.78rem', color: '#4A5568', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+              Order Summary
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box>
+                <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#F0F4F8' }}>
+                  {event?.title}
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', color: '#7A8A99' }}>
+                  {selectedTicket?.name ?? ''}
+                </Typography>
+              </Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#00D4FF' }}>
+                {selectedTicket && Number(selectedTicket.price) === 0
+                  ? 'Free'
+                  : selectedTicket ? `$${Number(selectedTicket.price).toFixed(2)}` : ''}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Payment form — only for paid tickets */}
+          {isPaidTicket && (
+            <>
+              <Divider sx={{ borderColor: 'rgba(240,244,248,0.06)' }} />
+              <Typography sx={{ fontSize: '0.78rem', color: '#4A5568', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                Card Information
+              </Typography>
+
+              {/* Card number */}
+              <TextField
+                label="Card Number"
+                fullWidth
+                placeholder="1234 5678 9012 3456"
+                value={cardNumber}
+                onChange={e => setCardNumber(formatCardNumber(e.target.value))}
+                inputProps={{ maxLength: 19, inputMode: 'numeric' }}
+                InputProps={{
+                  sx: { color: '#F0F4F8', fontFamily: 'monospace', letterSpacing: '0.1em' },
+                  endAdornment: (
+                    <Box sx={{ display: 'flex', gap: 0.5, opacity: 0.5 }}>
+                      {['VISA', 'MC'].map(b => (
+                        <Box key={b} sx={{ fontSize: '0.6rem', fontWeight: 800, color: '#7A8A99', border: '1px solid rgba(240,244,248,0.15)', borderRadius: '4px', px: 0.5 }}>
+                          {b}
+                        </Box>
+                      ))}
+                    </Box>
+                  ),
+                }}
+              />
+
+              {/* Cardholder name */}
+              <TextField
+                label="Cardholder Name"
+                fullWidth
+                placeholder="John Smith"
+                value={cardName}
+                onChange={e => setCardName(e.target.value.toUpperCase())}
+                InputProps={{ sx: { color: '#F0F4F8', letterSpacing: '0.05em' } }}
+              />
+
+              {/* Expiry + CVV side by side */}
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  label="Expiry (MM/YY)"
+                  fullWidth
+                  placeholder="08/27"
+                  value={cardExpiry}
+                  onChange={e => setCardExpiry(formatExpiry(e.target.value))}
+                  inputProps={{ maxLength: 5, inputMode: 'numeric' }}
+                  InputProps={{ sx: { color: '#F0F4F8' } }}
+                />
+                <TextField
+                  label="CVV"
+                  fullWidth
+                  placeholder="123"
+                  value={cardCvv}
+                  onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  inputProps={{ maxLength: 4, inputMode: 'numeric' }}
+                  type="password"
+                  InputProps={{ sx: { color: '#F0F4F8' } }}
+                />
+              </Box>
+
+              <Typography sx={{ fontSize: '0.75rem', color: '#4A5568', display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                🔒 Your payment info is encrypted and secure
+              </Typography>
+            </>
+          )}
+
+          {(bookingErr || paymentErr) && (
+            <Alert severity="error" sx={{ bgcolor: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>
+              {bookingErr || paymentErr}
             </Alert>
           )}
-          <Typography sx={{ color: '#7A8A99', fontSize: '0.9rem', mb: 1 }}>
-            Event: <span style={{ color: '#F0F4F8', fontWeight: 600 }}>{event?.title}</span>
-          </Typography>
-          {selectedTT && (() => {
-            const tt = ticketTypes.find(t => t.id === selectedTT);
-            return tt ? (
-              <Typography sx={{ color: '#7A8A99', fontSize: '0.9rem' }}>
-                Ticket: <span style={{ color: '#F0F4F8', fontWeight: 600 }}>{tt.name}</span>
-                {' — '}
-                <span style={{ color: '#00D4FF', fontWeight: 700 }}>
-                  {Number(tt.price) === 0 ? 'Free' : `$${Number(tt.price).toFixed(2)}`}
-                </span>
-              </Typography>
-            ) : null;
-          })()}
         </DialogContent>
+
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button onClick={() => setBookingOpen(false)} disabled={bookingBusy} sx={{ color: '#7A8A99' }}>
+          <Button onClick={() => { setBookingOpen(false); resetPayment(); }} disabled={bookingBusy} sx={{ color: '#7A8A99' }}>
             Cancel
           </Button>
           <Button
@@ -611,7 +725,11 @@ const EventDetailPage = () => {
               color: '#080C10', fontWeight: 700, borderRadius: '8px', px: 3,
             }}
           >
-            {bookingBusy ? <CircularProgress size={18} sx={{ color: '#080C10' }} /> : 'Confirm'}
+            {bookingBusy
+              ? <CircularProgress size={18} sx={{ color: '#080C10' }} />
+              : isPaidTicket
+                ? `Pay $${Number(selectedTicket?.price ?? 0).toFixed(2)}`
+                : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>
