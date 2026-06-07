@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage    from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateEventPage from './pages/CreateEventPage';
+import EventDetailPage from './pages/EventDetailPage';
 
 const theme = createTheme({
   palette: {
@@ -122,6 +123,7 @@ function App() {
             <Route path="/profile"   element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/admin"         element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="/events/create" element={<ProtectedRoute><CreateEventPage /></ProtectedRoute>} />
+            <Route path="/events/:id"     element={<EventDetailPage />} />
             <Route path="*"              element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

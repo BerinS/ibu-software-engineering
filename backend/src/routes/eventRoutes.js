@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { getEvents, getEventById, createEvent } from '../controllers/eventController.js';
+import { getEvents, getEventById, getEventTickets, createEvent } from '../controllers/eventController.js';
 import { protect }           from '../middleware/authMiddleware.js';
 import { uploadEventCover }  from '../middleware/upload.js';
 
@@ -132,5 +132,8 @@ router.route('/')
 
 router.route('/:id')
   .get(getEventById);
+
+router.route('/:id/tickets')
+  .get(getEventTickets);
 
 export default router;

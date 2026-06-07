@@ -1,5 +1,6 @@
 import * as Event      from '../models/eventModel.js';
 import * as TicketType from '../models/ticketTypeModel.js';
+
 import { pool }        from '../config/db.js';
 import { validationResult } from 'express-validator';
 import ApiError from '../utils/ApiError.js';
@@ -10,6 +11,16 @@ export const getEvents = async (req, res, next) => {
     const { sortBy, order } = req.query;
     const events = await Event.findAll(sortBy, order);
     res.status(200).json(events);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/events/:id/tickets
+export const getEventTickets = async (req, res, next) => {
+  try {
+    const tickets = await TicketType.findByEventId(req.params.id);
+    res.status(200).json(tickets);
   } catch (error) {
     next(error);
   }

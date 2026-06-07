@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardActions, Typography, Button, Box } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -8,6 +9,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 const API_BASE = 'http://localhost:5000';
 
 const EventCard = ({ event, index = 0 }) => {
+  const navigate = useNavigate();
   const formattedDate = new Date(event.event_date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -185,6 +187,7 @@ const EventCard = ({ event, index = 0 }) => {
         <Button
           className="view-btn"
           fullWidth
+          onClick={() => navigate(`/events/${event.id}`)}
           endIcon={<ArrowForwardIcon sx={{ fontSize: '14px !important', transition: 'transform 0.2s' }} />}
           sx={{
             color: '#7A8A99',
