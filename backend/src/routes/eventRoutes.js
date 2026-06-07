@@ -1,6 +1,8 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { getEvents, getEventById, getEventTickets, createEvent } from '../controllers/eventController.js';
+import { getEventAttendees } from '../controllers/bookingController.js';
+import { submitFeedback, getEventFeedback } from '../controllers/feedbackController.js';
 import { protect }           from '../middleware/authMiddleware.js';
 import { uploadEventCover }  from '../middleware/upload.js';
 
@@ -135,5 +137,12 @@ router.route('/:id')
 
 router.route('/:id/tickets')
   .get(getEventTickets);
+
+router.route('/:id/attendees')
+  .get(protect, getEventAttendees);
+
+router.route('/:id/feedback')
+  .get(getEventFeedback)
+  .post(protect, submitFeedback);
 
 export default router;

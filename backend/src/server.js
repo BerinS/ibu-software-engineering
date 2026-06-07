@@ -3,9 +3,10 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import userRoutes from './routes/userRoutes.js';
-import eventRoutes from './routes/eventRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
+import userRoutes    from './routes/userRoutes.js';
+import eventRoutes   from './routes/eventRoutes.js';
+import adminRoutes   from './routes/adminRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 // ES-module equivalent of __dirname (required for express.static path resolution)
@@ -23,9 +24,10 @@ app.use(express.json());
 // Must be registered before routes so /uploads/* never hits the router.
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-app.use('/api/users',  userRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/admin',  adminRoutes);
+app.use('/api/users',    userRoutes);
+app.use('/api/events',   eventRoutes);
+app.use('/api/admin',    adminRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // catches errors passed via next(error) in all routes
 app.use(errorHandler);

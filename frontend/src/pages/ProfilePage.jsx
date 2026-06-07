@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Avatar, Chip, Divider,
   CircularProgress, Alert, Button, Grid,
+  Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon    from '@mui/icons-material/LocationOn';
@@ -11,10 +12,15 @@ import EventIcon              from '@mui/icons-material/Event';
 import BookmarkIcon           from '@mui/icons-material/Bookmark';
 import ArrowForwardIcon       from '@mui/icons-material/ArrowForward';
 import DashboardIcon          from '@mui/icons-material/Dashboard';
+import QrCode2Icon            from '@mui/icons-material/QrCode2';
+import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
+import SpaceDashboardIcon     from '@mui/icons-material/SpaceDashboard';
 import { Link } from 'react-router-dom';
 import Navbar    from '../components/Navbar';
 import EventCard from '../components/EventCard';
 import { useAuth } from '../context/AuthContext';
+
+const QR_URL = (hash) => `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${hash}`;
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -71,6 +77,8 @@ const EmptyState = ({ icon, title, subtitle, action }) => (
 
 // Compact booking row card
 const BookingCard = ({ booking }) => {
+  const [qrOpen, setQrOpen] = useState(false);
+
   const statusColors = {
     confirmed: { color: '#4ADE80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
     pending:   { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)' },
@@ -79,62 +87,116 @@ const BookingCard = ({ booking }) => {
   const s = statusColors[booking.status] ?? statusColors.pending;
 
   return (
-    <Box sx={bookingCardSx}>
-      {/* Left colour strip */}
-      <Box sx={{ width: 3, borderRadius: '3px 0 0 3px', bgcolor: s.color, flexShrink: 0, alignSelf: 'stretch' }} />
+    <>
+      <Box sx={bookingCardSx}>
+        {/* Left colour strip */}
+        <Box sx={{ width: 3, borderRadius: '3px 0 0 3px', bgcolor: s.color, flexShrink: 0, alignSelf: 'stretch' }} />
 
-      <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-        {/* Title row */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
-          <Typography sx={{
-            fontFamily: '"Syne", sans-serif', fontWeight: 700,
-            fontSize: '0.95rem', color: '#F0F4F8', lineHeight: 1.3,
-          }}>
+        <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+          {/* Title row */}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+            <Typography sx={{
+              fontFamily: '"Syne", sans-serif', fontWeight: 700,
+              fontSize: '0.95rem', color: '#F0F4F8', lineHeight: 1.3,
+            }}>
+              {booking.title}
+            </Typography>
+            <Chip
+              label={booking.status}
+              size="small"
+              sx={{
+                height: 20, fontSize: '0.68rem', fontWeight: 700,
+                flexShrink: 0, textTransform: 'capitalize',
+                color: s.color, bgcolor: s.bg,
+                border: `1px solid ${s.border}`,
+              }}
+            />
+          </Box>
+
+          {/* Meta row */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarMonthIcon sx={{ fontSize: 12, color: '#00D4FF' }} />
+              <Typography sx={metaTextSx}>{formatShort(booking.event_date)}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <LocationOnIcon sx={{ fontSize: 12, color: '#00D4FF' }} />
+              <Typography sx={{ ...metaTextSx, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {booking.location}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <ConfirmationNumberIcon sx={{ fontSize: 12, color: '#00D4FF' }} />
+              <Typography sx={metaTextSx}>{booking.ticket_type_name}</Typography>
+            </Box>
+          </Box>
+
+          {/* Price + booked date + QR button */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#F0F4F8' }}>
+              {Number(booking.price) === 0 ? 'Free' : `$${Number(booking.price).toFixed(2)}`}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.72rem', color: '#4A5568' }}>
+                Booked {formatShort(booking.booked_at)}
+              </Typography>
+              {booking.qr_hash && (
+                <Button
+                  size="small"
+                  startIcon={<QrCode2Icon sx={{ fontSize: 14 }} />}
+                  onClick={() => setQrOpen(true)}
+                  sx={{
+                    fontSize: '0.72rem', py: 0.25, px: 1,
+                    color: '#00D4FF', borderColor: 'rgba(0,212,255,0.3)',
+                    border: '1px solid',
+                    borderRadius: '6px',
+                    '&:hover': { background: 'rgba(0,212,255,0.08)' },
+                  }}
+                >
+                  QR
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* QR dialog */}
+      <Dialog
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        PaperProps={{ sx: { background: '#0E1318', border: '1px solid rgba(240,244,248,0.08)', borderRadius: '16px', minWidth: 320 } }}
+      >
+        <DialogTitle sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, color: '#F0F4F8', textAlign: 'center' }}>
+          Your Ticket
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, pb: 1 }}>
+          <Box sx={{ p: 2, background: '#fff', borderRadius: '12px', boxShadow: '0 0 32px rgba(0,212,255,0.15)' }}>
+            <Box
+              component="img"
+              src={QR_URL(booking.qr_hash)}
+              alt="QR Code"
+              sx={{ display: 'block', width: 200, height: 200 }}
+            />
+          </Box>
+          <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, color: '#F0F4F8', textAlign: 'center' }}>
             {booking.title}
           </Typography>
           <Chip
-            label={booking.status}
+            label="Confirmed"
             size="small"
-            sx={{
-              height: 20, fontSize: '0.68rem', fontWeight: 700,
-              flexShrink: 0, textTransform: 'capitalize',
-              color: s.color, bgcolor: s.bg,
-              border: `1px solid ${s.border}`,
-            }}
+            icon={<CheckCircleIcon sx={{ fontSize: 14, color: '#4ADE80 !important' }} />}
+            sx={{ color: '#4ADE80', bgcolor: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)' }}
           />
-        </Box>
-
-        {/* Meta row */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <CalendarMonthIcon sx={{ fontSize: 12, color: '#00D4FF' }} />
-            <Typography sx={metaTextSx}>{formatShort(booking.event_date)}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <LocationOnIcon sx={{ fontSize: 12, color: '#00D4FF' }} />
-            <Typography sx={{ ...metaTextSx, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {booking.location}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <ConfirmationNumberIcon sx={{ fontSize: 12, color: '#00D4FF' }} />
-            <Typography sx={metaTextSx}>{booking.ticket_type_name}</Typography>
-          </Box>
-        </Box>
-
-        {/* Price + booked date */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#F0F4F8' }}>
-            {Number(booking.price) === 0
-              ? 'Free'
-              : `$${Number(booking.price).toFixed(2)}`}
+          <Typography sx={{ fontSize: '0.78rem', color: '#4A5568', textAlign: 'center', pb: 1 }}>
+            Show this QR code at the event entrance
           </Typography>
-          <Typography sx={{ fontSize: '0.72rem', color: '#4A5568' }}>
-            Booked {formatShort(booking.booked_at)}
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2.5 }}>
+          <Button onClick={() => setQrOpen(false)} sx={{ color: '#7A8A99' }}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
@@ -237,9 +299,22 @@ const ProfilePage = () => {
                         '&:hover': { borderColor: '#F59E0B', background: 'rgba(245,158,11,0.06)' },
                       }}
                     >
-                      Go to Dashboard
+                      Admin Dashboard
                     </Button>
                   )}
+                  <Button
+                    component={Link}
+                    to="/organizer"
+                    variant="outlined"
+                    startIcon={<SpaceDashboardIcon />}
+                    sx={{
+                      color: '#00D4FF', borderColor: 'rgba(0,212,255,0.35)',
+                      fontWeight: 600, fontSize: '0.85rem',
+                      '&:hover': { borderColor: '#00D4FF', background: 'rgba(0,212,255,0.06)' },
+                    }}
+                  >
+                    Organizer Dashboard
+                  </Button>
                   <Button
                     component={Link}
                     to="/events/create"
