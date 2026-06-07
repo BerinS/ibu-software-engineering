@@ -74,57 +74,6 @@ export const styles = {
     animationDelay: '120ms',
   },
 
-  statsBar: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: { xs: 0, sm: 0 },
-    px: GUTTER,
-    mb: { xs: 6, md: 8 },
-    borderTop: '1px solid rgba(240,244,248,0.05)',
-    borderBottom: '1px solid rgba(240,244,248,0.05)',
-    py: { xs: 3, md: 4 },
-    animation: 'fadeSlideUp 0.6s ease both',
-    animationDelay: '150ms',
-  },
-
-  statItem: {
-    flex: '1 1 0',
-    minWidth: 100,
-    textAlign: 'center',
-    px: 2,
-    position: 'relative',
-    '&:not(:last-child)::after': {
-      content: '""',
-      position: 'absolute',
-      right: 0,
-      top: '20%',
-      height: '60%',
-      width: '1px',
-      background: 'rgba(240,244,248,0.08)',
-    },
-  },
-
-  statValue: {
-    fontFamily: '"Syne", sans-serif',
-    fontWeight: 800,
-    fontSize: { xs: '1.6rem', md: '2rem' },
-    color: '#F0F4F8',
-    lineHeight: 1.1,
-    mb: 0.5,
-    background: 'linear-gradient(135deg, #F0F4F8 0%, #7A8A99 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-
-  statLabel: {
-    fontFamily: '"DM Sans", sans-serif',
-    fontSize: '0.72rem',
-    fontWeight: 500,
-    color: '#4A5A69',
-    letterSpacing: '0.1em',
-    textTransform: 'uppercase',
-  },
-
   gridSection: {
     px: GUTTER,
     pb: 12,
@@ -135,8 +84,6 @@ export const styles = {
     alignItems: 'center',
     gap: 2,
     mb: 4,
-    flexWrap: 'wrap',
-    rowGap: 1.5,
     animation: 'fadeSlideUp 0.6s ease both',
     animationDelay: '180ms',
   },
@@ -180,41 +127,6 @@ export const styles = {
   emptyStateSubtext: {
     color: '#7A8A99',
     fontSize: '0.9rem',
-  },
-
-  sortChips: {
-    display: 'flex',
-    gap: 0.75,
-    flexWrap: 'wrap',
-  },
-
-  sortChip: {
-    fontFamily: '"DM Sans", sans-serif',
-    fontSize: '0.72rem',
-    fontWeight: 500,
-    color: '#7A8A99',
-    background: 'rgba(240,244,248,0.04)',
-    border: '1px solid rgba(240,244,248,0.08)',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(240,244,248,0.07)',
-      color: '#F0F4F8',
-    },
-    transition: 'all 0.2s',
-  },
-
-  sortChipActive: {
-    fontFamily: '"DM Sans", sans-serif',
-    fontSize: '0.72rem',
-    fontWeight: 600,
-    color: '#00D4FF',
-    background: 'rgba(0,212,255,0.08)',
-    border: '1px solid rgba(0,212,255,0.25)',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0,212,255,0.12)',
-    },
-    transition: 'all 0.2s',
   },
 
   skeleton: {

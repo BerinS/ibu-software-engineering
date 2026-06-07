@@ -1,15 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardActions, Typography, Button, Box } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-// Base URL for uploaded cover images (matches Express static mount point)
-const API_BASE = 'http://localhost:5000';
-
 const EventCard = ({ event, index = 0 }) => {
-  const navigate = useNavigate();
   const formattedDate = new Date(event.event_date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -17,13 +12,7 @@ const EventCard = ({ event, index = 0 }) => {
   });
 
   const month = new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const day   = new Date(event.event_date).getDate();
-
-  // Use the organizer-uploaded cover when available; fall back to a deterministic
-  // placeholder so cards always have an image (picsum is seeded by event id).
-  const coverSrc = event.cover_image
-    ? `${API_BASE}/uploads/events/${event.cover_image}`
-    : `https://picsum.photos/seed/${event.id}/400/200`;
+  const day = new Date(event.event_date).getDate();
 
   return (
     <Card
@@ -73,7 +62,7 @@ const EventCard = ({ event, index = 0 }) => {
         <Box
           className="card-image"
           component="img"
-          src={coverSrc}
+          src={`https://picsum.photos/seed/${event.id}/400/200`}
           alt={event.title}
           sx={{
             width: '100%',
@@ -187,7 +176,6 @@ const EventCard = ({ event, index = 0 }) => {
         <Button
           className="view-btn"
           fullWidth
-          onClick={() => navigate(`/events/${event.id}`)}
           endIcon={<ArrowForwardIcon sx={{ fontSize: '14px !important', transition: 'transform 0.2s' }} />}
           sx={{
             color: '#7A8A99',
