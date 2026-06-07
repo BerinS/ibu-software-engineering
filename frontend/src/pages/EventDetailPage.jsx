@@ -17,6 +17,8 @@ import StarIcon               from '@mui/icons-material/Star';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
 import HourglassTopIcon       from '@mui/icons-material/HourglassTop';
 import PeopleAltIcon          from '@mui/icons-material/PeopleAlt';
+import PersonIcon             from '@mui/icons-material/Person';
+import ListAltIcon            from '@mui/icons-material/ListAlt';
 import Navbar  from '../components/Navbar';
 import Footer  from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
@@ -58,6 +60,9 @@ const EventDetailPage = () => {
   const [feedbackBusy,    setFeedbackBusy]    = useState(false);
   const [feedbackErr,     setFeedbackErr]     = useState('');
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+
+  // Custom registration field responses
+  const [customResponses, setCustomResponses] = useState({});
 
   // Waitlist
   const [onWaitlist,    setOnWaitlist]    = useState(false);
@@ -163,7 +168,7 @@ const EventDetailPage = () => {
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: authHeaders,
-        body: JSON.stringify({ ticket_type_id: selectedTT }),
+        body: JSON.stringify({ ticket_type_id: selectedTT, custom_responses: customResponses }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Booking failed');
@@ -251,6 +256,14 @@ const EventDetailPage = () => {
 
   const agenda = event?.agenda_data
     ? (Array.isArray(event.agenda_data) ? event.agenda_data : JSON.parse(event.agenda_data))
+    : [];
+
+  const speakers = event?.speakers_data
+    ? (Array.isArray(event.speakers_data) ? event.speakers_data : JSON.parse(event.speakers_data))
+    : [];
+
+  const customFieldDefs = event?.custom_fields
+    ? (Array.isArray(event.custom_fields) ? event.custom_fields : JSON.parse(event.custom_fields))
     : [];
 
   const avgRating = feedbackList.length > 0
@@ -425,6 +438,37 @@ const EventDetailPage = () => {
                             )}
                             {item.description && (
                               <Typography sx={{ fontSize: '0.82rem', color: '#7A8A99', mt: 0.25 }}>{item.description}</Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Speakers */}
+                {speakers.length > 0 && (
+                  <Box sx={{ mb: 4 }}>
+                    <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: '1.1rem', color: '#F0F4F8', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonIcon sx={{ fontSize: 18, color: '#00D4FF' }} />
+                      Speakers
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      {speakers.map((sp, i) => (
+                        <Box key={i} sx={{
+                          display: 'flex', gap: 2, p: 2, borderRadius: '12px',
+                          background: 'rgba(14,19,24,0.7)', border: '1px solid rgba(240,244,248,0.06)',
+                        }}>
+                          <Avatar sx={{ width: 44, height: 44, bgcolor: 'rgba(0,212,255,0.1)', color: '#00D4FF', fontWeight: 700, fontSize: '1rem', flexShrink: 0 }}>
+                            {sp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </Avatar>
+                          <Box>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: '#F0F4F8' }}>{sp.name}</Typography>
+                            {sp.title && (
+                              <Typography sx={{ fontSize: '0.8rem', color: '#00D4FF', mb: 0.5 }}>{sp.title}</Typography>
+                            )}
+                            {sp.bio && (
+                              <Typography sx={{ fontSize: '0.82rem', color: '#7A8A99', lineHeight: 1.5 }}>{sp.bio}</Typography>
                             )}
                           </Box>
                         </Box>
@@ -718,6 +762,30 @@ const EventDetailPage = () => {
               </Typography>
             </Box>
           </Box>
+
+          {/* Custom registration fields */}
+          {customFieldDefs.length > 0 && (
+            <>
+              <Divider sx={{ borderColor: 'rgba(240,244,248,0.06)' }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                <ListAltIcon sx={{ fontSize: 15, color: '#00D4FF' }} />
+                <Typography sx={{ fontSize: '0.78rem', color: '#4A5568', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                  Registration Details
+                </Typography>
+              </Box>
+              {customFieldDefs.map((field, i) => (
+                <TextField
+                  key={i}
+                  label={field}
+                  fullWidth
+                  size="small"
+                  value={customResponses[field] ?? ''}
+                  onChange={e => setCustomResponses(prev => ({ ...prev, [field]: e.target.value }))}
+                  InputProps={{ sx: { color: '#F0F4F8' } }}
+                />
+              ))}
+            </>
+          )}
 
           {/* Payment form — only for paid tickets */}
           {isPaidTicket && (

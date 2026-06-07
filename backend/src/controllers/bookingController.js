@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 // POST /api/bookings
 export const createBooking = async (req, res, next) => {
   try {
-    const { ticket_type_id } = req.body;
+    const { ticket_type_id, custom_responses } = req.body;
     const user_id = req.user.id;
 
     if (!ticket_type_id) throw ApiError.badRequest('ticket_type_id is required');
@@ -33,7 +33,7 @@ export const createBooking = async (req, res, next) => {
     const qr_hash = randomUUID();
 
     // Create booking
-    const booking = await Booking.create({ user_id, ticket_type_id, status: 'confirmed', qr_hash });
+    const booking = await Booking.create({ user_id, ticket_type_id, status: 'confirmed', qr_hash, custom_responses: custom_responses || {} });
 
     // Increment tickets_sold
     await query(
