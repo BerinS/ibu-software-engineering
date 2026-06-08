@@ -12,6 +12,8 @@ import ConfirmationNumberIcon   from '@mui/icons-material/ConfirmationNumber';
 import ArrowBackIcon            from '@mui/icons-material/ArrowBack';
 import CameraAltIcon            from '@mui/icons-material/CameraAlt';
 import CloseIcon                from '@mui/icons-material/Close';
+import PersonIcon               from '@mui/icons-material/Person';
+import ListAltIcon              from '@mui/icons-material/ListAlt';
 import { Link, useNavigate }    from 'react-router-dom';
 import Navbar    from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -45,6 +47,14 @@ const makeTicket = (preset = {}) => ({
   name:           preset.name  ?? '',
   price:          preset.price ?? '0',
   quantity_limit: '',
+});
+
+/** Returns a new blank speaker row. */
+const makeSpeaker = () => ({
+  _id:   Math.random().toString(36).slice(2),
+  name:  '',
+  title: '',
+  bio:   '',
 });
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -135,6 +145,8 @@ const CreateEventPage = () => {
     total_capacity: '',
   });
   const [ticketTypes,   setTicketTypes]   = useState([]);
+  const [speakers,      setSpeakers]      = useState([]);
+  const [customFields,  setCustomFields]  = useState([]);
   const [errors,        setErrors]        = useState({});
   const [submitting,    setSubmitting]    = useState(false);
   const [successDialog, setSuccessDialog] = useState(false);
@@ -315,6 +327,20 @@ const CreateEventPage = () => {
           }))
         ));
       }
+      if (speakers.length > 0) {
+        fd.append('speakers_data', JSON.stringify(
+          speakers.filter(s => s.name.trim()).map(s => ({
+            name:  s.name.trim(),
+            title: s.title.trim(),
+            bio:   s.bio.trim(),
+          }))
+        ));
+      }
+      if (customFields.length > 0) {
+        fd.append('custom_fields', JSON.stringify(
+          customFields.filter(f => f.trim())
+        ));
+      }
 
       const response = await fetch(`${API_BASE}/api/events`, {
         method: 'POST',
@@ -344,6 +370,8 @@ const CreateEventPage = () => {
     setSuccessDialog(false);
     setFormData({ title: '', description: '', location: '', category: 'General', event_date: '', total_capacity: '' });
     setTicketTypes([]);
+    setSpeakers([]);
+    setCustomFields([]);
     setErrors({});
     setSubmitError('');
     removeCover();
@@ -585,6 +613,104 @@ const CreateEventPage = () => {
                 )}
               </Box>
             </Box>
+          </Box>
+
+          {/* ══ Speakers ════════════════════════════════════════════════════════ */}
+          <Box sx={sectionCardSx}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <SectionHeader icon={<PersonIcon />} title="Speakers" />
+              <Button
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => setSpeakers(prev => [...prev, makeSpeaker()])}
+                disabled={speakers.length >= 10}
+                sx={{ color: '#00D4FF', fontSize: '0.8rem', mb: 2, '&:hover': { background: 'rgba(0,212,255,0.06)' } }}
+              >
+                Add Speaker
+              </Button>
+            </Box>
+            {speakers.length === 0 ? (
+              <Typography sx={{ fontSize: '0.83rem', color: '#4A5568', fontStyle: 'italic' }}>
+                Optional — add speakers, presenters, or performers for this event.
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {speakers.map((sp, i) => (
+                  <Box key={sp._id} sx={{ p: 2, borderRadius: '12px', background: 'rgba(8,12,16,0.4)', border: '1px solid rgba(240,244,248,0.07)', position: 'relative' }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => setSpeakers(prev => prev.filter((_, idx) => idx !== i))}
+                      sx={{ position: 'absolute', top: 8, right: 8, color: '#F87171', '&:hover': { bgcolor: 'rgba(248,113,113,0.08)' } }}
+                    >
+                      <DeleteOutlinedIcon fontSize="small" />
+                    </IconButton>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5, pr: 4 }}>
+                      <TextField
+                        label="Name" size="small" fullWidth required
+                        value={sp.name}
+                        onChange={e => setSpeakers(prev => { const c = [...prev]; c[i] = { ...c[i], name: e.target.value }; return c; })}
+                        placeholder="e.g. Dr. Jane Smith"
+                      />
+                      <TextField
+                        label="Title / Role" size="small" fullWidth
+                        value={sp.title}
+                        onChange={e => setSpeakers(prev => { const c = [...prev]; c[i] = { ...c[i], title: e.target.value }; return c; })}
+                        placeholder="e.g. CTO at Acme Corp"
+                      />
+                    </Box>
+                    <TextField
+                      label="Bio" size="small" fullWidth multiline rows={2}
+                      value={sp.bio}
+                      onChange={e => setSpeakers(prev => { const c = [...prev]; c[i] = { ...c[i], bio: e.target.value }; return c; })}
+                      placeholder="Short biography (optional)"
+                      sx={{ mt: 1.5 }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
+
+          {/* ══ Custom Registration Fields ═══════════════════════════════════════ */}
+          <Box sx={sectionCardSx}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <SectionHeader icon={<ListAltIcon />} title="Registration Fields" />
+              <Button
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => setCustomFields(prev => [...prev, ''])}
+                disabled={customFields.length >= 8}
+                sx={{ color: '#00D4FF', fontSize: '0.8rem', mb: 2, '&:hover': { background: 'rgba(0,212,255,0.06)' } }}
+              >
+                Add Field
+              </Button>
+            </Box>
+            {customFields.length === 0 ? (
+              <Typography sx={{ fontSize: '0.83rem', color: '#4A5568', fontStyle: 'italic' }}>
+                Optional — add custom questions attendees must answer when registering (e.g. "Company name", "Dietary requirements").
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {customFields.map((field, i) => (
+                  <Box key={i} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <TextField
+                      size="small" fullWidth
+                      value={field}
+                      onChange={e => setCustomFields(prev => { const c = [...prev]; c[i] = e.target.value; return c; })}
+                      placeholder={`Field ${i + 1} label, e.g. "Company name"`}
+                      slotProps={{ htmlInput: { maxLength: 80 } }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={() => setCustomFields(prev => prev.filter((_, idx) => idx !== i))}
+                      sx={{ color: '#F87171', flexShrink: 0, '&:hover': { bgcolor: 'rgba(248,113,113,0.08)' } }}
+                    >
+                      <DeleteOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Box>
 
           {/* Submit error */}

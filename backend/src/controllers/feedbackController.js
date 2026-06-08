@@ -37,6 +37,31 @@ export const submitFeedback = async (req, res, next) => {
   }
 };
 
+// GET /api/users/me/feedback  — all feedback across organizer's events
+export const getOrganizerFeedback = async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT
+         f.id, f.rating, f.comment, f.submitted_at,
+         u.full_name  AS user_name,
+         e.id         AS event_id,
+         e.title      AS event_title,
+         ROUND(AVG(f2.rating) FILTER (WHERE f2.event_id = f.event_id), 1) AS event_avg_rating
+       FROM feedback f
+       JOIN users  u  ON u.id  = f.user_id
+       JOIN events e  ON e.id  = f.event_id
+       JOIN feedback f2 ON f2.event_id = f.event_id
+       WHERE e.organizer_id = $1
+       GROUP BY f.id, u.full_name, e.id, e.title
+       ORDER BY f.submitted_at DESC`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/events/:id/feedback
 export const getEventFeedback = async (req, res, next) => {
   try {

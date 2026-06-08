@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box, Typography, Chip, CircularProgress, Alert,
   Divider, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Collapse, IconButton, Button,
   Avatar, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Select, MenuItem, FormControl, InputLabel,
-  Snackbar, Tabs, Tab,
+  Snackbar, Tabs, Tab, Rating, LinearProgress,
 } from '@mui/material';
 import KeyboardArrowDownIcon  from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon    from '@mui/icons-material/KeyboardArrowUp';
@@ -20,6 +20,9 @@ import CancelIcon             from '@mui/icons-material/Cancel';
 import QrCode2Icon            from '@mui/icons-material/QrCode2';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
 import BarChartIcon           from '@mui/icons-material/BarChart';
+import StarIcon               from '@mui/icons-material/Star';
+import RefreshIcon            from '@mui/icons-material/Refresh';
+import ForumIcon              from '@mui/icons-material/Forum';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -147,11 +150,50 @@ const EditEventDialog = ({ open, event, token, onClose, onSaved }) => {
 };
 
 /* ─────────────────── QR Check-in Panel ─────────────────── */
-const QrCheckinPanel = ({ token }) => {
-  const [qrInput,  setQrInput]  = useState('');
-  const [result,   setResult]   = useState(null);
-  const [busy,     setBusy]     = useState(false);
-  const [err,      setErr]      = useState('');
+const QrCheckinPanel = ({ token, events }) => {
+  const [qrInput,      setQrInput]      = useState('');
+  const [result,       setResult]       = useState(null);
+  const [busy,         setBusy]         = useState(false);
+  const [err,          setErr]          = useState('');
+  const [liveStats,    setLiveStats]    = useState([]);  // per-event check-in counts
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [lastRefresh,  setLastRefresh]  = useState(null);
+  const intervalRef = useRef(null);
+
+  const fetchStats = useCallback(async () => {
+    if (!events || events.length === 0) return;
+    setStatsLoading(true);
+    try {
+      const results = await Promise.all(
+        events
+          .filter(ev => ev.status === 'approved')
+          .map(ev =>
+            fetch(`${API_BASE}/api/events/${ev.id}/attendees`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then(r => r.ok ? r.json() : [])
+              .then(attendees => ({
+                id:        ev.id,
+                title:     ev.title,
+                total:     attendees.length,
+                checkedIn: attendees.filter(a => a.checked_in_at).length,
+              }))
+              .catch(() => ({ id: ev.id, title: ev.title, total: 0, checkedIn: 0 }))
+          )
+      );
+      setLiveStats(results);
+      setLastRefresh(new Date());
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [token, events]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    fetchStats();
+    intervalRef.current = setInterval(fetchStats, 30000);
+    return () => clearInterval(intervalRef.current);
+  }, [fetchStats]);
 
   const handleCheckin = async (e) => {
     e.preventDefault();
@@ -169,6 +211,8 @@ const QrCheckinPanel = ({ token }) => {
       if (!res.ok) throw new Error(data.message || 'Verification failed');
       setResult(data);
       setQrInput('');
+      // Refresh stats after check-in
+      setTimeout(fetchStats, 500);
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -177,7 +221,65 @@ const QrCheckinPanel = ({ token }) => {
   };
 
   return (
-    <Box sx={{ maxWidth: 540 }}>
+    <Box>
+      {/* Live attendance counters */}
+      {liveStats.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: '0.95rem', color: '#F0F4F8' }}>
+              Live Attendance Counter
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {lastRefresh && (
+                <Typography sx={{ fontSize: '0.72rem', color: '#4A5568' }}>
+                  Updated {lastRefresh.toLocaleTimeString()}
+                </Typography>
+              )}
+              <IconButton size="small" onClick={fetchStats} disabled={statsLoading}
+                sx={{ color: '#00D4FF', '&:hover': { background: 'rgba(0,212,255,0.08)' } }}>
+                <RefreshIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {liveStats.map(s => {
+              const pct = s.total > 0 ? Math.round((s.checkedIn / s.total) * 100) : 0;
+              return (
+                <Box key={s.id} sx={{
+                  p: 2, borderRadius: '12px',
+                  background: 'rgba(14,19,24,0.7)', border: '1px solid rgba(240,244,248,0.06)',
+                }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#F0F4F8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+                      {s.title}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.92rem', fontWeight: 800, color: '#00D4FF' }}>
+                      {s.checkedIn} / {s.total}
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={pct}
+                    sx={{
+                      height: 6, borderRadius: 3,
+                      bgcolor: 'rgba(240,244,248,0.08)',
+                      '& .MuiLinearProgress-bar': {
+                        background: pct === 100 ? 'linear-gradient(90deg,#4ADE80,#22c55e)' : 'linear-gradient(90deg,#00D4FF,#0099bb)',
+                        borderRadius: 3,
+                      },
+                    }}
+                  />
+                  <Typography sx={{ fontSize: '0.72rem', color: '#4A5568', mt: 0.5 }}>
+                    {pct}% checked in
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
+
+      {/* QR Input */}
       <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F0F4F8', mb: 0.75 }}>
         QR Ticket Validation
       </Typography>
@@ -185,7 +287,7 @@ const QrCheckinPanel = ({ token }) => {
         Enter or paste the QR code hash to verify and check in an attendee at the event entrance.
       </Typography>
 
-      <Box component="form" onSubmit={handleCheckin} sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+      <Box component="form" onSubmit={handleCheckin} sx={{ display: 'flex', gap: 1.5, mb: 2, maxWidth: 540 }}>
         <TextField
           fullWidth
           placeholder="Paste QR hash here (e.g. 550e8400-e29b-41d4-a716-...)"
@@ -201,14 +303,14 @@ const QrCheckinPanel = ({ token }) => {
       </Box>
 
       {err && (
-        <Alert severity="error" sx={{ bgcolor: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '10px' }}>
+        <Alert severity="error" sx={{ bgcolor: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '10px', maxWidth: 540 }}>
           {err}
         </Alert>
       )}
 
       {result && (
         <Box sx={{
-          p: 2.5, borderRadius: '12px',
+          p: 2.5, borderRadius: '12px', maxWidth: 540,
           background: result.alreadyCheckedIn ? 'rgba(245,158,11,0.07)' : 'rgba(74,222,128,0.07)',
           border: `1px solid ${result.alreadyCheckedIn ? 'rgba(245,158,11,0.25)' : 'rgba(74,222,128,0.25)'}`,
         }}>
@@ -227,6 +329,96 @@ const QrCheckinPanel = ({ token }) => {
           </Typography>
         </Box>
       )}
+    </Box>
+  );
+};
+
+/* ─────────────────── Feedback Panel ─────────────────── */
+const FeedbackPanel = ({ token }) => {
+  const [feedbackList, setFeedbackList] = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState('');
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/users/me/feedback`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(setFeedbackList)
+      .catch(() => setError('Could not load feedback.'))
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <CircularProgress sx={{ color: '#00D4FF' }} />
+    </Box>
+  );
+
+  if (error) return (
+    <Alert severity="error" sx={{ bgcolor: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>
+      {error}
+    </Alert>
+  );
+
+  if (feedbackList.length === 0) return (
+    <Box sx={{ textAlign: 'center', py: 10, border: '1px dashed rgba(240,244,248,0.08)', borderRadius: '16px' }}>
+      <ForumIcon sx={{ fontSize: 40, color: '#1E2A35', mb: 2 }} />
+      <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: '1.1rem', color: '#F0F4F8', mb: 0.75 }}>
+        No feedback yet
+      </Typography>
+      <Typography sx={{ fontSize: '0.85rem', color: '#7A8A99' }}>
+        Attendees will leave reviews here once they attend your events.
+      </Typography>
+    </Box>
+  );
+
+  // Group by event
+  const byEvent = feedbackList.reduce((acc, fb) => {
+    if (!acc[fb.event_id]) acc[fb.event_id] = { title: fb.event_title, avg: fb.event_avg_rating, items: [] };
+    acc[fb.event_id].items.push(fb);
+    return acc;
+  }, {});
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {Object.values(byEvent).map(group => (
+        <Box key={group.title} sx={{ p: 3, borderRadius: '14px', background: 'rgba(14,19,24,0.6)', border: '1px solid rgba(240,244,248,0.06)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+            <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: '0.95rem', color: '#F0F4F8' }}>
+              {group.title}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Rating value={Number(group.avg)} precision={0.1} readOnly size="small"
+                sx={{ '& .MuiRating-iconFilled': { color: '#F59E0B' }, '& .MuiRating-iconEmpty': { color: 'rgba(240,244,248,0.1)' } }} />
+              <Typography sx={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.9rem' }}>{group.avg}</Typography>
+              <Typography sx={{ fontSize: '0.78rem', color: '#4A5568' }}>({group.items.length} review{group.items.length !== 1 ? 's' : ''})</Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {group.items.map(fb => (
+              <Box key={fb.id} sx={{ p: 2, borderRadius: '10px', background: 'rgba(8,12,16,0.5)', border: '1px solid rgba(240,244,248,0.04)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#F0F4F8' }}>{fb.user_name}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Rating value={fb.rating} readOnly size="small"
+                      sx={{ '& .MuiRating-iconFilled': { color: '#F59E0B' }, '& .MuiRating-iconEmpty': { color: 'rgba(240,244,248,0.1)' } }} />
+                    <Typography sx={{ fontSize: '0.72rem', color: '#4A5568' }}>
+                      {new Date(fb.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </Typography>
+                  </Box>
+                </Box>
+                {fb.comment && (
+                  <Typography sx={{ fontSize: '0.83rem', color: '#7A8A99', fontStyle: 'italic' }}>
+                    "{fb.comment}"
+                  </Typography>
+                )}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      ))}
     </Box>
   );
 };
@@ -585,6 +777,7 @@ const OrganizerDashboard = () => {
           <Tab label="My Events" icon={<EventIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
           <Tab label="Analytics" icon={<BarChartIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
           <Tab label="QR Check-in" icon={<QrCode2Icon sx={{ fontSize: 16 }} />} iconPosition="start" />
+          <Tab label="Feedback" icon={<ForumIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
         </Tabs>
 
         <Divider sx={{ borderColor: 'rgba(240,244,248,0.06)', mb: 4 }} />
@@ -664,7 +857,12 @@ const OrganizerDashboard = () => {
 
         {/* ── Tab 2: QR Check-in ── */}
         {tab === 2 && (
-          <QrCheckinPanel token={user.token} />
+          <QrCheckinPanel token={user.token} events={events} />
+        )}
+
+        {/* ── Tab 3: Feedback ── */}
+        {tab === 3 && (
+          <FeedbackPanel token={user.token} />
         )}
       </Box>
 

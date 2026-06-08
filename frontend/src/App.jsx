@@ -11,6 +11,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import CreateEventPage from './pages/CreateEventPage';
 import EventDetailPage     from './pages/EventDetailPage';
 import OrganizerDashboard  from './pages/OrganizerDashboard';
+import AboutPage   from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 
 const theme = createTheme({
   palette: {
@@ -126,6 +128,8 @@ function App() {
             <Route path="/events/create"  element={<ProtectedRoute><CreateEventPage /></ProtectedRoute>} />
             <Route path="/events/:id"     element={<EventDetailPage />} />
             <Route path="/organizer"      element={<ProtectedRoute><OrganizerDashboard /></ProtectedRoute>} />
+            <Route path="/about"          element={<AboutPage />} />
+            <Route path="/contact"        element={<ContactPage />} />
             <Route path="*"              element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

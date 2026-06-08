@@ -1,10 +1,10 @@
 import { query } from '../config/db.js';
 
 export const create = async (bookingData) => {
-  const { user_id, ticket_type_id, status, qr_hash } = bookingData;
+  const { user_id, ticket_type_id, status, qr_hash, custom_responses } = bookingData;
   const result = await query(
-    'INSERT INTO bookings (user_id, ticket_type_id, status, qr_hash) VALUES ($1, $2, $3, $4) RETURNING *',
-    [user_id, ticket_type_id, status, qr_hash]
+    'INSERT INTO bookings (user_id, ticket_type_id, status, qr_hash, custom_responses) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [user_id, ticket_type_id, status, qr_hash, JSON.stringify(custom_responses || {})]
   );
   return result.rows[0];
 };

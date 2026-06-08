@@ -53,7 +53,7 @@ export const updateEvent = async (req, res, next) => {
       throw ApiError.forbidden('You do not have permission to edit this event');
     }
 
-    const { title, description, location, event_date, total_capacity, category } = req.body;
+    const { title, description, location, event_date, total_capacity, category, speakers_data, custom_fields } = req.body;
 
     const result = await query(
       `UPDATE events
@@ -62,8 +62,10 @@ export const updateEvent = async (req, res, next) => {
              location       = COALESCE($3, location),
              event_date     = COALESCE($4, event_date),
              total_capacity = COALESCE($5, total_capacity),
-             category       = COALESCE($6, category)
-       WHERE id = $7
+             category       = COALESCE($6, category),
+             speakers_data  = COALESCE($7, speakers_data),
+             custom_fields  = COALESCE($8, custom_fields)
+       WHERE id = $9
        RETURNING *`,
       [
         title        || null,
@@ -72,6 +74,8 @@ export const updateEvent = async (req, res, next) => {
         event_date   || null,
         total_capacity ? parseInt(total_capacity, 10) : null,
         category     || null,
+        speakers_data !== undefined ? JSON.stringify(speakers_data) : null,
+        custom_fields !== undefined ? JSON.stringify(custom_fields) : null,
         eventId,
       ]
     );

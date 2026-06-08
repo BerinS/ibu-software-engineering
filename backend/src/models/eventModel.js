@@ -48,13 +48,15 @@ export const create = async (eventData, client = null) => {
   const {
     organizer_id, title, description, location, event_date,
     total_capacity, agenda_data, category, cover_image,
+    speakers_data, custom_fields,
   } = eventData;
   const run = client ? (sql, params) => client.query(sql, params) : query;
   const result = await run(
     `INSERT INTO events
        (organizer_id, title, description, location, event_date,
-        total_capacity, agenda_data, category, cover_image)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        total_capacity, agenda_data, category, cover_image,
+        speakers_data, custom_fields)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      RETURNING *`,
     [
       organizer_id,
@@ -66,6 +68,8 @@ export const create = async (eventData, client = null) => {
       JSON.stringify(agenda_data || []),
       category || 'General',
       cover_image || null,
+      JSON.stringify(speakers_data || []),
+      JSON.stringify(custom_fields || []),
     ]
   );
   return result.rows[0];

@@ -66,7 +66,8 @@ CREATE TYPE public.booking_status AS ENUM (
 CREATE TYPE public.event_status AS ENUM (
     'pending',
     'approved',
-    'rejected'
+    'rejected',
+    'cancelled'
 );
 
 
@@ -98,7 +99,8 @@ CREATE TABLE public.bookings (
     status public.booking_status DEFAULT 'confirmed'::public.booking_status,
     qr_hash character varying(255),
     checked_in_at timestamp with time zone,
-    booked_at timestamp with time zone DEFAULT now()
+    booked_at timestamp with time zone DEFAULT now(),
+    custom_responses jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -142,7 +144,9 @@ CREATE TABLE public.events (
     created_at timestamp with time zone DEFAULT now(),
     category character varying(50) DEFAULT 'General'::character varying NOT NULL,
     status public.event_status DEFAULT 'pending'::public.event_status,
-    cover_image character varying(255)
+    cover_image character varying(255),
+    speakers_data jsonb DEFAULT '[]'::jsonb,
+    custom_fields jsonb DEFAULT '[]'::jsonb
 );
 
 

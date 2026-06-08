@@ -4,6 +4,7 @@ import {
   Box, Typography, Chip, Button, Skeleton, Divider, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Alert, Rating, TextField, Snackbar, CircularProgress, InputAdornment,
+  Avatar,
 } from '@mui/material';
 import CalendarMonthIcon      from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon         from '@mui/icons-material/LocationOn';
@@ -14,6 +15,10 @@ import AccessTimeIcon         from '@mui/icons-material/AccessTime';
 import QrCode2Icon            from '@mui/icons-material/QrCode2';
 import StarIcon               from '@mui/icons-material/Star';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
+import HourglassTopIcon       from '@mui/icons-material/HourglassTop';
+import PeopleAltIcon          from '@mui/icons-material/PeopleAlt';
+import PersonIcon             from '@mui/icons-material/Person';
+import ListAltIcon            from '@mui/icons-material/ListAlt';
 import Navbar  from '../components/Navbar';
 import Footer  from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
@@ -55,6 +60,18 @@ const EventDetailPage = () => {
   const [feedbackErr,     setFeedbackErr]     = useState('');
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
+  // Custom registration field responses
+  const [customResponses, setCustomResponses] = useState({});
+
+  // Waitlist
+  const [onWaitlist,    setOnWaitlist]    = useState(false);
+  const [waitlistBusy,  setWaitlistBusy]  = useState(false);
+  const [waitlistErr,   setWaitlistErr]   = useState('');
+
+  // Attendee directory
+  const [directory,     setDirectory]     = useState([]);
+  const [directoryOpen, setDirectoryOpen] = useState(false);
+
   // Snackbar
   const [snack, setSnack] = useState({ open: false, msg: '', color: '#4ADE80' });
 
@@ -86,7 +103,7 @@ const EventDetailPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Check if logged-in user already has a booking for this event
+  // Check if logged-in user already has a booking / waitlist spot for this event
   const checkExistingBooking = useCallback(() => {
     if (!user) return;
     fetch(`${API_BASE}/api/users/me/bookings`, { headers: authHeaders })
@@ -95,6 +112,18 @@ const EventDetailPage = () => {
         const existing = bookings.find(b => String(b.event_id) === String(id));
         if (existing) setBooking(existing);
       })
+      .catch(() => {});
+
+    // Check waitlist status
+    fetch(`${API_BASE}/api/events/${id}/waitlist/me`, { headers: authHeaders })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.waitlisted) setOnWaitlist(true); })
+      .catch(() => {});
+
+    // Load attendee directory (visible to attendees with confirmed booking)
+    fetch(`${API_BASE}/api/events/${id}/directory`, { headers: authHeaders })
+      .then(r => r.ok ? r.json() : [])
+      .then(setDirectory)
       .catch(() => {});
   }, [user, id]);
 
@@ -138,7 +167,7 @@ const EventDetailPage = () => {
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: authHeaders,
-        body: JSON.stringify({ ticket_type_id: selectedTT }),
+        body: JSON.stringify({ ticket_type_id: selectedTT, custom_responses: customResponses }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Booking failed');
@@ -152,6 +181,28 @@ const EventDetailPage = () => {
       setBookingErr(err.message);
     } finally {
       setBookingBusy(false);
+    }
+  };
+
+  /* ── Join waitlist ── */
+  const handleJoinWaitlist = async () => {
+    if (!user) { navigate('/login'); return; }
+    setWaitlistBusy(true);
+    setWaitlistErr('');
+    try {
+      const res = await fetch(`${API_BASE}/api/events/${id}/waitlist`, {
+        method: 'POST',
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Could not join waitlist');
+      setOnWaitlist(true);
+      setSnack({ open: true, msg: "You're on the waitlist!", color: '#F59E0B' });
+    } catch (err) {
+      setWaitlistErr(err.message);
+      setSnack({ open: true, msg: err.message, color: '#F87171' });
+    } finally {
+      setWaitlistBusy(false);
     }
   };
 
@@ -204,6 +255,14 @@ const EventDetailPage = () => {
 
   const agenda = event?.agenda_data
     ? (Array.isArray(event.agenda_data) ? event.agenda_data : JSON.parse(event.agenda_data))
+    : [];
+
+  const speakers = event?.speakers_data
+    ? (Array.isArray(event.speakers_data) ? event.speakers_data : JSON.parse(event.speakers_data))
+    : [];
+
+  const customFieldDefs = event?.custom_fields
+    ? (Array.isArray(event.custom_fields) ? event.custom_fields : JSON.parse(event.custom_fields))
     : [];
 
   const avgRating = feedbackList.length > 0
@@ -386,6 +445,37 @@ const EventDetailPage = () => {
                   </Box>
                 )}
 
+                {/* Speakers */}
+                {speakers.length > 0 && (
+                  <Box sx={{ mb: 4 }}>
+                    <Typography sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: '1.1rem', color: '#F0F4F8', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonIcon sx={{ fontSize: 18, color: '#00D4FF' }} />
+                      Speakers
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      {speakers.map((sp, i) => (
+                        <Box key={i} sx={{
+                          display: 'flex', gap: 2, p: 2, borderRadius: '12px',
+                          background: 'rgba(14,19,24,0.7)', border: '1px solid rgba(240,244,248,0.06)',
+                        }}>
+                          <Avatar sx={{ width: 44, height: 44, bgcolor: 'rgba(0,212,255,0.1)', color: '#00D4FF', fontWeight: 700, fontSize: '1rem', flexShrink: 0 }}>
+                            {sp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </Avatar>
+                          <Box>
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: '#F0F4F8' }}>{sp.name}</Typography>
+                            {sp.title && (
+                              <Typography sx={{ fontSize: '0.8rem', color: '#00D4FF', mb: 0.5 }}>{sp.title}</Typography>
+                            )}
+                            {sp.bio && (
+                              <Typography sx={{ fontSize: '0.82rem', color: '#7A8A99', lineHeight: 1.5 }}>{sp.bio}</Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
                 <Divider sx={{ borderColor: 'rgba(240,244,248,0.06)', mb: 4 }} />
 
                 {/* ── Feedback section ── */}
@@ -555,42 +645,79 @@ const EventDetailPage = () => {
 
               {/* Already booked — show QR button */}
               {booking ? (
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<QrCode2Icon />}
-                  onClick={() => setQrOpen(true)}
-                  sx={{
-                    mt: 3, borderColor: 'rgba(0,212,255,0.35)', color: '#00D4FF',
-                    fontWeight: 700, py: 1.4, borderRadius: '10px',
-                    '&:hover': { borderColor: '#00D4FF', background: 'rgba(0,212,255,0.08)' },
-                  }}
-                >
-                  View My Ticket (QR)
-                </Button>
+                <>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<QrCode2Icon />}
+                    onClick={() => setQrOpen(true)}
+                    sx={{
+                      mt: 3, borderColor: 'rgba(0,212,255,0.35)', color: '#00D4FF',
+                      fontWeight: 700, py: 1.4, borderRadius: '10px',
+                      '&:hover': { borderColor: '#00D4FF', background: 'rgba(0,212,255,0.08)' },
+                    }}
+                  >
+                    View My Ticket (QR)
+                  </Button>
+                </>
+              ) : onWaitlist ? (
+                <Box sx={{
+                  mt: 3, p: 2, borderRadius: '10px', textAlign: 'center',
+                  background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.25)',
+                }}>
+                  <HourglassTopIcon sx={{ fontSize: 22, color: '#F59E0B', mb: 0.5 }} />
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#F59E0B' }}>
+                    You're on the waitlist
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#7A8A99', mt: 0.25 }}>
+                    We'll notify you if a spot opens up
+                  </Typography>
+                </Box>
+              ) : availPct === 0 ? (
+                <>
+                  <Box sx={{
+                    mt: 3, p: 1.5, borderRadius: '10px', textAlign: 'center',
+                    background: 'rgba(240,244,248,0.04)', border: '1px solid rgba(240,244,248,0.08)',
+                    mb: 1.5,
+                  }}>
+                    <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#7A8A99' }}>
+                      Sold Out
+                    </Typography>
+                  </Box>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={waitlistBusy ? <CircularProgress size={14} sx={{ color: '#F59E0B' }} /> : <HourglassTopIcon />}
+                    onClick={handleJoinWaitlist}
+                    disabled={waitlistBusy}
+                    sx={{
+                      borderColor: 'rgba(245,158,11,0.4)', color: '#F59E0B',
+                      fontWeight: 700, py: 1.4, borderRadius: '10px',
+                      '&:hover': { borderColor: '#F59E0B', background: 'rgba(245,158,11,0.06)' },
+                    }}
+                  >
+                    Join Waitlist
+                  </Button>
+                </>
               ) : (
                 <Button
                   fullWidth
                   variant="contained"
-                  disabled={availPct === 0 || !selectedTT}
+                  disabled={!selectedTT}
                   onClick={() => {
                     if (!user) { navigate('/login'); return; }
                     setBookingOpen(true);
                   }}
                   sx={{
                     mt: 3,
-                    background: availPct === 0
-                      ? 'rgba(240,244,248,0.06)'
-                      : 'linear-gradient(135deg,#00D4FF,#0099bb)',
-                    color: availPct === 0 ? '#7A8A99' : '#080C10',
+                    background: 'linear-gradient(135deg,#00D4FF,#0099bb)',
+                    color: '#080C10',
                     fontWeight: 700, py: 1.4, borderRadius: '10px', fontSize: '0.92rem',
-                    boxShadow: availPct === 0 ? 'none' : '0 0 24px rgba(0,212,255,0.25)',
-                    '&:hover': {
-                      background: availPct === 0 ? undefined : 'linear-gradient(135deg,#00bfea,#008aaa)',
-                    },
+                    boxShadow: '0 0 24px rgba(0,212,255,0.25)',
+                    '&:hover': { background: 'linear-gradient(135deg,#00bfea,#008aaa)' },
                   }}
                 >
-                  {availPct === 0 ? 'Sold Out' : 'Get Tickets'}
+                  Get Tickets
                 </Button>
               )}
             </Box>
@@ -634,6 +761,30 @@ const EventDetailPage = () => {
               </Typography>
             </Box>
           </Box>
+
+          {/* Custom registration fields */}
+          {customFieldDefs.length > 0 && (
+            <>
+              <Divider sx={{ borderColor: 'rgba(240,244,248,0.06)' }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                <ListAltIcon sx={{ fontSize: 15, color: '#00D4FF' }} />
+                <Typography sx={{ fontSize: '0.78rem', color: '#4A5568', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                  Registration Details
+                </Typography>
+              </Box>
+              {customFieldDefs.map((field, i) => (
+                <TextField
+                  key={i}
+                  label={field}
+                  fullWidth
+                  size="small"
+                  value={customResponses[field] ?? ''}
+                  onChange={e => setCustomResponses(prev => ({ ...prev, [field]: e.target.value }))}
+                  InputProps={{ sx: { color: '#F0F4F8' } }}
+                />
+              ))}
+            </>
+          )}
 
           {/* Payment form — only for paid tickets */}
           {isPaidTicket && (
@@ -730,6 +881,45 @@ const EventDetailPage = () => {
                 ? `Pay $${Number(selectedTicket?.price ?? 0).toFixed(2)}`
                 : 'Confirm'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Attendee Directory dialog ── */}
+      <Dialog
+        open={directoryOpen}
+        onClose={() => setDirectoryOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { background: '#0E1318', border: '1px solid rgba(240,244,248,0.08)', borderRadius: '16px' } }}
+      >
+        <DialogTitle sx={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, color: '#F0F4F8', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PeopleAltIcon sx={{ color: '#00D4FF', fontSize: 20 }} />
+          Attendee Directory
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: '0.8rem', color: '#4A5568', mb: 2 }}>
+            {directory.length} confirmed attendee{directory.length !== 1 ? 's' : ''} for this event
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {directory.map((a, i) => (
+              <Box key={i} sx={{
+                display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5,
+                borderRadius: '10px', background: 'rgba(14,19,24,0.7)',
+                border: '1px solid rgba(240,244,248,0.05)',
+              }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(0,212,255,0.1)', color: '#00D4FF', fontSize: '0.72rem', fontWeight: 700 }}>
+                  {(a.full_name ?? '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#F0F4F8' }}>{a.full_name}</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#4A5568' }}>{a.ticket_type_name}</Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setDirectoryOpen(false)} sx={{ color: '#7A8A99' }}>Close</Button>
         </DialogActions>
       </Dialog>
 
